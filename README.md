@@ -30,7 +30,21 @@ This project is designed for interviews and engineering demos. It uses reproduci
 
 ## Quick Start
 
-Backend:
+Recommended on Windows:
+
+```powershell
+cd "D:\projects\SupplyGuard Agent"
+.\scripts\start-backend.ps1
+```
+
+Open a second terminal:
+
+```powershell
+cd "D:\projects\SupplyGuard Agent"
+.\scripts\start-frontend.ps1
+```
+
+Backend manually:
 
 ```powershell
 cd "D:\projects\SupplyGuard Agent\backend"
@@ -40,7 +54,7 @@ pip install -r requirements.txt
 python run.py
 ```
 
-Frontend:
+Frontend manually, if Node.js/npm is already on PATH:
 
 ```powershell
 cd "D:\projects\SupplyGuard Agent\frontend"
@@ -111,4 +125,3 @@ The current v1 keeps LLM usage optional so the demo always runs without network 
 - Add document upload for supplier certificates and contracts.
 - Add evaluation dashboards for policy hit rate and risk rating consistency.
 - Add authentication, role-based approvals and audit exports.
-

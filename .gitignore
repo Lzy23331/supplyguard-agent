@@ -2,6 +2,8 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .pip-cache/
+.npm-cache/
+.tools/
 .venv/
 backend/supplyguard.db
 backend/.env
