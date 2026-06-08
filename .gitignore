@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pip-cache/
+.venv/
+backend/supplyguard.db
+backend/.env
+node_modules/
+dist/
+.env

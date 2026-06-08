@@ -1,0 +1,84 @@
+[
+  {
+    "sample_key": "low",
+    "risk_profile": "Low",
+    "name": "GreenFlow Components Ltd.",
+    "website": "https://greenflow.example.com",
+    "industry": "Industrial components",
+    "region": "Singapore",
+    "annual_spend": 180000,
+    "cooperation_type": "standard parts supplier",
+    "summary": "Registration complete, audited financials available, no negative public record in sample data.",
+    "evidence": [
+      {
+        "source": "public_registry",
+        "title": "Complete business registration",
+        "content": "The supplier has active registration, stable ownership and complete tax profile.",
+        "severity": "info",
+        "url": "mock://registry/greenflow"
+      },
+      {
+        "source": "media_monitor",
+        "title": "No material negative media",
+        "content": "No sanction, litigation, bribery or delivery failure signal found in mock media dataset.",
+        "severity": "info",
+        "url": "mock://media/greenflow"
+      }
+    ]
+  },
+  {
+    "sample_key": "medium",
+    "risk_profile": "Medium",
+    "name": "Northbridge Packaging Co.",
+    "website": "https://northbridge.example.com",
+    "industry": "Packaging",
+    "region": "Vietnam",
+    "annual_spend": 720000,
+    "cooperation_type": "strategic packaging supplier",
+    "summary": "Minor lawsuit and late delivery record require supplementary documents before onboarding.",
+    "evidence": [
+      {
+        "source": "court_record",
+        "title": "Commercial lawsuit settled in 2025",
+        "content": "A contract dispute lawsuit was settled with no ongoing enforcement, but procurement SOP requires explanation.",
+        "severity": "warning",
+        "url": "mock://court/northbridge"
+      },
+      {
+        "source": "delivery_review",
+        "title": "Two late delivery incidents",
+        "content": "Two late delivery incidents were reported by reference customers during seasonal demand peaks.",
+        "severity": "warning",
+        "url": "mock://delivery/northbridge"
+      }
+    ]
+  },
+  {
+    "sample_key": "high",
+    "risk_profile": "High",
+    "name": "Redstone Metals Trading",
+    "website": "https://redstone-metals.example.com",
+    "industry": "Metals trading",
+    "region": "Hong Kong",
+    "annual_spend": 2600000,
+    "cooperation_type": "critical raw material supplier",
+    "summary": "Sanction proximity and bribery allegation create severe compliance risk.",
+    "evidence": [
+      {
+        "source": "sanction_screening",
+        "title": "Sanction proximity alert",
+        "content": "A beneficial owner appears on a sectoral sanction watchlist in the mock screening dataset.",
+        "severity": "critical",
+        "url": "mock://sanctions/redstone"
+      },
+      {
+        "source": "integrity_media",
+        "title": "Bribery investigation allegation",
+        "content": "Public reporting links a former sales executive to a bribery investigation involving customs clearance.",
+        "severity": "critical",
+        "url": "mock://media/redstone"
+      }
+    ]
+  }
+]
+
