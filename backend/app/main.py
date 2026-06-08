@@ -32,6 +32,17 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/")
+def root() -> dict[str, str]:
+    return {
+        "name": "SupplyGuard Agent API",
+        "status": "running",
+        "docs": "http://127.0.0.1:8000/docs",
+        "health": "http://127.0.0.1:8000/api/health",
+        "samples": "http://127.0.0.1:8000/api/samples/suppliers",
+    }
+
+
 @app.get("/api/samples/suppliers")
 def samples() -> list[dict]:
     return list_sample_suppliers()
