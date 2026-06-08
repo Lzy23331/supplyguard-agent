@@ -27,16 +27,16 @@ class RiskRuleTool:
         if supplier.get("annual_spend", 0) >= 1000000:
             business += 8
         dimensions = [
-            self._dimension("Compliance", compliance, "Sanctions, integrity, litigation and onboarding policy checks."),
-            self._dimension("Business", business, "Operating stability, public reputation and contract exposure."),
-            self._dimension("Delivery", delivery, "Continuity, timeliness and procurement execution risk."),
+            self._dimension("Compliance", compliance, "覆盖制裁、商业诚信、诉讼记录与供应商准入政策检查。"),
+            self._dimension("Business", business, "评估经营稳定性、公开舆情、采购金额暴露与合作必要性。"),
+            self._dimension("Delivery", delivery, "评估供应连续性、交付及时性与采购执行风险。"),
         ]
         total = min(100, round(sum(d["score"] for d in dimensions) / len(dimensions)))
         level = "High" if has_critical else self._level(total)
         recommendation = {
-            "Low": "Approve onboarding with standard annual monitoring.",
-            "Medium": "Conditionally approve after supplementary documents and manager review.",
-            "High": "Reject onboarding or escalate to compliance committee before any purchase order.",
+            "Low": "建议准入，按标准年度监控机制持续跟踪。",
+            "Medium": "建议补充材料并完成业务负责人复核后有条件准入。",
+            "High": "建议拒绝准入，或在任何采购订单前升级至合规委员会审批。",
         }[level]
         return {"total_score": total, "risk_level": level, "recommendation": recommendation, "dimensions": dimensions}
 

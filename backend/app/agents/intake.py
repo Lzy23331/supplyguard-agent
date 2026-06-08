@@ -10,6 +10,5 @@ class IntakeAgent(BaseAgent):
         if supplier.get("annual_spend", 0) >= 1000000:
             checks.append("high value procurement approval")
         context["plan"] = {"checks": checks, "priority": "high" if len(checks) > 4 else "standard"}
-        self.event(context["task_id"], "completed", f"Created diligence plan with {len(checks)} checks.", [])
+        self.event(context["task_id"], "completed", f"已生成尽调计划，共包含 {len(checks)} 个检查项。", [])
         return context
-

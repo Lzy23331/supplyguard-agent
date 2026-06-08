@@ -30,9 +30,9 @@ def test_create_task_and_events_report():
     assert any(event["agent_name"] == "ReportAgent" for event in events)
 
     report = client.get(f"/api/diligence/tasks/{task['id']}/report").json()["markdown"]
-    assert "Risk level" in report
-    assert "Evidence Chain" in report
-    assert "Recommendation" in report
+    assert "风险等级" in report
+    assert "证据链" in report
+    assert "准入建议" in report
 
 
 def test_sample_suppliers_generate_different_risk_levels():
@@ -56,4 +56,3 @@ def test_risk_rule_tool_hits_high_risk():
         {"annual_spend": 2000000},
     )
     assert risk["risk_level"] == "High"
-

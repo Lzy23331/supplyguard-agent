@@ -15,6 +15,5 @@ class ReportAgent(BaseAgent):
         )
         save_report(context["task_id"], markdown)
         context["report"] = markdown
-        self.event(context["task_id"], "completed", "Generated Markdown due diligence report.", [{"tool": self.report_tool.name}])
+        self.event(context["task_id"], "completed", "已生成 Markdown 格式供应商尽调报告。", [{"tool": self.report_tool.name}])
         return context
-

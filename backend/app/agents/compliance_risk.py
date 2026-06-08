@@ -22,8 +22,7 @@ class ComplianceRiskAgent(BaseAgent):
         self.event(
             context["task_id"],
             "completed",
-            f"Compliance risk assessed as {compliance['level']} with score {compliance['score']}.",
+            f"合规风险评估完成，等级为 {compliance['level']}，评分为 {compliance['score']}。",
             [{"tool": self.rag_tool.name, "matches": len(policies)}, {"tool": self.rule_tool.name}],
         )
         return context
-

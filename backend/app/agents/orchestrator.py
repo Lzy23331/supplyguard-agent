@@ -24,7 +24,7 @@ class Orchestrator:
         context = AgentContext(task_id=task_id, supplier=supplier)
         try:
             for agent in self.agents:
-                add_event(task_id, agent.name, "running", f"{agent.name} started.", [])
+                add_event(task_id, agent.name, "running", f"{agent.name} 开始执行。", [])
                 context = agent.run(context)
             risk = context["risk"]
             update_task(
@@ -39,4 +39,3 @@ class Orchestrator:
             add_event(task_id, "Orchestrator", "failed", str(exc), [])
             update_task(task_id, status="failed")
             raise
-

@@ -4,23 +4,23 @@
     "risk_profile": "Low",
     "name": "GreenFlow Components Ltd.",
     "website": "https://greenflow.example.com",
-    "industry": "Industrial components",
-    "region": "Singapore",
+    "industry": "工业零部件",
+    "region": "新加坡",
     "annual_spend": 180000,
-    "cooperation_type": "standard parts supplier",
-    "summary": "Registration complete, audited financials available, no negative public record in sample data.",
+    "cooperation_type": "标准零部件供应商",
+    "summary": "工商登记完整，财务资料可追溯，样例数据中未发现实质负面记录。",
     "evidence": [
       {
         "source": "public_registry",
-        "title": "Complete business registration",
-        "content": "The supplier has active registration, stable ownership and complete tax profile.",
+        "title": "工商登记信息完整",
+        "content": "该供应商处于正常存续状态，股权结构稳定，税务与基础主体资料完整。",
         "severity": "info",
         "url": "mock://registry/greenflow"
       },
       {
         "source": "media_monitor",
-        "title": "No material negative media",
-        "content": "No sanction, litigation, bribery or delivery failure signal found in mock media dataset.",
+        "title": "未发现实质负面舆情",
+        "content": "在样例舆情数据集中，未发现制裁、重大诉讼、商业贿赂或严重交付失败信号。",
         "severity": "info",
         "url": "mock://media/greenflow"
       }
@@ -31,23 +31,23 @@
     "risk_profile": "Medium",
     "name": "Northbridge Packaging Co.",
     "website": "https://northbridge.example.com",
-    "industry": "Packaging",
-    "region": "Vietnam",
+    "industry": "包装材料",
+    "region": "越南",
     "annual_spend": 720000,
-    "cooperation_type": "strategic packaging supplier",
-    "summary": "Minor lawsuit and late delivery record require supplementary documents before onboarding.",
+    "cooperation_type": "战略包装材料供应商",
+    "summary": "存在轻微诉讼与延期交付记录，准入前建议补充说明材料。",
     "evidence": [
       {
         "source": "court_record",
-        "title": "Commercial lawsuit settled in 2025",
-        "content": "A contract dispute lawsuit was settled with no ongoing enforcement, but procurement SOP requires explanation.",
+        "title": "2025 年商业诉讼已和解",
+        "content": "该供应商曾涉及合同争议诉讼，目前无持续执行记录，但采购复核 SOP 要求提供情况说明。",
         "severity": "warning",
         "url": "mock://court/northbridge"
       },
       {
         "source": "delivery_review",
-        "title": "Two late delivery incidents",
-        "content": "Two late delivery incidents were reported by reference customers during seasonal demand peaks.",
+        "title": "两次延期交付记录",
+        "content": "参考客户反馈其在季节性需求高峰期间发生过两次延期交付，需要评估产能与备货计划。",
         "severity": "warning",
         "url": "mock://delivery/northbridge"
       }
@@ -58,27 +58,26 @@
     "risk_profile": "High",
     "name": "Redstone Metals Trading",
     "website": "https://redstone-metals.example.com",
-    "industry": "Metals trading",
-    "region": "Hong Kong",
+    "industry": "金属贸易",
+    "region": "中国香港",
     "annual_spend": 2600000,
-    "cooperation_type": "critical raw material supplier",
-    "summary": "Sanction proximity and bribery allegation create severe compliance risk.",
+    "cooperation_type": "关键原材料供应商",
+    "summary": "存在制裁接近性与商业贿赂相关指控，构成严重合规风险。",
     "evidence": [
       {
         "source": "sanction_screening",
-        "title": "Sanction proximity alert",
-        "content": "A beneficial owner appears on a sectoral sanction watchlist in the mock screening dataset.",
+        "title": "制裁接近性预警",
+        "content": "样例筛查数据中显示，该供应商的一名受益所有人出现在行业制裁观察名单中。",
         "severity": "critical",
         "url": "mock://sanctions/redstone"
       },
       {
         "source": "integrity_media",
-        "title": "Bribery investigation allegation",
-        "content": "Public reporting links a former sales executive to a bribery investigation involving customs clearance.",
+        "title": "商业贿赂调查相关指控",
+        "content": "公开报道显示，该供应商前销售负责人曾被卷入与清关环节有关的商业贿赂调查。",
         "severity": "critical",
         "url": "mock://media/redstone"
       }
     ]
   }
 ]
-

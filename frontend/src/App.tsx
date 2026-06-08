@@ -6,10 +6,39 @@ import { AgentEvent, api, DiligenceTask, SupplierInput } from "./api/client";
 const emptySupplier: SupplierInput = {
   name: "",
   website: "",
-  industry: "Industrial components",
-  region: "Singapore",
+  industry: "工业零部件",
+  region: "新加坡",
   annual_spend: 180000,
-  cooperation_type: "standard parts supplier"
+  cooperation_type: "标准零部件供应商"
+};
+
+const riskLabels: Record<string, string> = {
+  Low: "低风险",
+  Medium: "中风险",
+  High: "高风险",
+  low: "低风险",
+  medium: "中风险",
+  high: "高风险"
+};
+
+const statusLabels: Record<string, string> = {
+  idle: "未开始",
+  created: "已创建",
+  running: "执行中",
+  completed: "已完成",
+  failed: "失败"
+};
+
+const dimensionLabels: Record<string, string> = {
+  Compliance: "合规风险",
+  Business: "经营风险",
+  Delivery: "交付风险"
+};
+
+const severityLabels: Record<string, string> = {
+  info: "信息",
+  warning: "预警",
+  critical: "严重"
 };
 
 function App() {
@@ -53,7 +82,7 @@ function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${task?.supplier.name ?? "supplier"}-diligence-report.md`;
+    link.download = `${task?.supplier.name ?? "supplier"}-尽调报告.md`;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -65,7 +94,7 @@ function App() {
           <ShieldAlert size={30} />
           <div>
             <h1>SupplyGuard Agent</h1>
-            <p>Supplier onboarding due diligence and risk reasoning system</p>
+            <p>供应商准入尽调与风险研判系统</p>
           </div>
         </div>
 
@@ -80,7 +109,7 @@ function App() {
               }}
             >
               <Sparkles size={16} />
-              {item.sample_key}
+              {riskLabels[item.sample_key ?? ""] ?? item.sample_key}
             </button>
           ))}
         </div>
@@ -93,23 +122,23 @@ function App() {
           }}
         >
           <label>
-            Supplier name
+            供应商名称
             <input value={supplier.name} onChange={(event) => updateField("name", event.target.value)} required />
           </label>
           <label>
-            Website
+            官网
             <input value={supplier.website ?? ""} onChange={(event) => updateField("website", event.target.value)} />
           </label>
           <label>
-            Industry
+            所属行业
             <input value={supplier.industry} onChange={(event) => updateField("industry", event.target.value)} required />
           </label>
           <label>
-            Region
+            所在地区
             <input value={supplier.region} onChange={(event) => updateField("region", event.target.value)} required />
           </label>
           <label>
-            Annual spend
+            年采购金额
             <input
               type="number"
               min="0"
@@ -119,7 +148,7 @@ function App() {
             />
           </label>
           <label>
-            Cooperation type
+            合作类型
             <input
               value={supplier.cooperation_type}
               onChange={(event) => updateField("cooperation_type", event.target.value)}
@@ -128,7 +157,7 @@ function App() {
           </label>
           <button className="primary" disabled={loading}>
             <Play size={17} />
-            {loading ? "Running agents" : "Create diligence task"}
+            {loading ? "Agent 执行中" : "创建尽调任务"}
           </button>
           {error && <p className="error">{error}</p>}
         </form>
@@ -137,25 +166,25 @@ function App() {
       <section className="content">
         <div className="status-strip">
           <div>
-            <span>Task</span>
-            <strong>{task?.id.slice(0, 8) ?? "Not started"}</strong>
+            <span>任务编号</span>
+            <strong>{task?.id.slice(0, 8) ?? "未开始"}</strong>
           </div>
           <div>
-            <span>Status</span>
-            <strong>{task?.status ?? "idle"}</strong>
+            <span>任务状态</span>
+            <strong>{statusLabels[task?.status ?? "idle"] ?? task?.status}</strong>
           </div>
           <div className={`risk-pill ${riskClass}`}>
-            <span>Risk</span>
-            <strong>{task?.risk_level ?? "--"}</strong>
+            <span>风险等级</span>
+            <strong>{riskLabels[task?.risk_level ?? ""] ?? "--"}</strong>
           </div>
           <div>
-            <span>Score</span>
+            <span>综合评分</span>
             <strong>{task?.total_score ?? "--"}</strong>
           </div>
         </div>
 
         <section className="panel">
-          <h2>Agent Timeline</h2>
+          <h2>Agent 执行时间线</h2>
           <div className="timeline">
             {events.map((event) => (
               <article className="event" key={event.id}>
@@ -163,25 +192,25 @@ function App() {
                 <div>
                   <div className="event-head">
                     <strong>{event.agent_name}</strong>
-                    <span>{event.status}</span>
+                    <span>{statusLabels[event.status] ?? event.status}</span>
                   </div>
                   <p>{event.summary}</p>
                   {event.tool_calls.length > 0 && <code>{JSON.stringify(event.tool_calls)}</code>}
                 </div>
               </article>
             ))}
-            {!events.length && <p className="muted">Create a task or choose a sample supplier.</p>}
+            {!events.length && <p className="muted">请创建任务，或选择一个样例供应商。</p>}
           </div>
         </section>
 
         <section className="panel">
-          <h2>Risk Portrait</h2>
+          <h2>风险画像</h2>
           <div className="risk-grid">
             {task?.dimensions.map((dimension) => (
               <article key={dimension.dimension} className="metric">
                 <div>
-                  <strong>{dimension.dimension}</strong>
-                  <span>{dimension.level}</span>
+                  <strong>{dimensionLabels[dimension.dimension] ?? dimension.dimension}</strong>
+                  <span>{riskLabels[dimension.level] ?? dimension.level}</span>
                 </div>
                 <meter min="0" max="100" value={dimension.score} />
                 <p>{dimension.rationale}</p>
@@ -191,7 +220,7 @@ function App() {
           <div className="evidence-list">
             {task?.evidence.map((item) => (
               <article key={`${item.source}-${item.title}`}>
-                <span>{item.severity}</span>
+                <span>{severityLabels[item.severity] ?? item.severity}</span>
                 <strong>{item.title}</strong>
                 <p>{item.content}</p>
               </article>
@@ -201,7 +230,7 @@ function App() {
 
         <section className="panel report-panel">
           <div className="panel-actions">
-            <h2>Report</h2>
+            <h2>尽调报告</h2>
             <div>
               <button onClick={() => void navigator.clipboard.writeText(report)} disabled={!report}>
                 <Clipboard size={16} />
@@ -211,7 +240,7 @@ function App() {
               </button>
             </div>
           </div>
-          {report ? <div className="markdown" dangerouslySetInnerHTML={reportHtml} /> : <div className="empty"><FileText />No report yet</div>}
+          {report ? <div className="markdown" dangerouslySetInnerHTML={reportHtml} /> : <div className="empty"><FileText />暂无报告</div>}
         </section>
       </section>
     </main>
@@ -219,4 +248,3 @@ function App() {
 }
 
 export default App;
-

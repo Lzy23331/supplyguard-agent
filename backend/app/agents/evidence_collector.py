@@ -17,8 +17,7 @@ class EvidenceCollectorAgent(BaseAgent):
         self.event(
             context["task_id"],
             "completed",
-            f"Collected and stored {count} evidence items.",
+            f"已收集并保存 {count} 条供应商证据。",
             [{"tool": self.search_tool.name, "count": len(evidence)}, {"tool": self.store_tool.name, "count": count}],
         )
         return context
-
