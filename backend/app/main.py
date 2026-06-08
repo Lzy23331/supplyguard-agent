@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -7,7 +9,14 @@ from app.repositories import create_task_record, get_report, get_task, list_even
 from app.schemas import ReportResponse, ReviewCreate, TaskCreate, TaskResponse
 from app.services.samples import list_sample_suppliers
 
-app = FastAPI(title="SupplyGuard Agent API", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    init_db()
+    yield
+
+
+app = FastAPI(title="SupplyGuard Agent API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -16,11 +25,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def startup() -> None:
-    init_db()
 
 
 @app.get("/api/health")
@@ -73,4 +77,3 @@ def review_task(task_id: str, payload: ReviewCreate) -> dict[str, str]:
         raise HTTPException(status_code=404, detail="Task not found")
     save_review(task_id, payload.reviewer, payload.decision, payload.comment)
     return {"status": "saved"}
-
