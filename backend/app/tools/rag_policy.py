@@ -7,7 +7,7 @@ class RAGPolicyTool:
     name = "RAGPolicyTool"
 
     def __init__(self) -> None:
-        self.policy_dir = get_settings().project_root / "data" / "policy_knowledge_base"
+        self.policy_dir = get_settings().project_root / "data" / "policies"
         self.parser = DocumentParserTool()
 
     def retrieve(self, query: str, top_k: int = 4) -> list[dict[str, str | int]]:
@@ -23,4 +23,3 @@ class RAGPolicyTool:
                 if score:
                     chunks.append({"document": doc["name"], "chunk": text[:800], "score": score, "index": idx})
         return sorted(chunks, key=lambda item: item["score"], reverse=True)[:top_k]
-

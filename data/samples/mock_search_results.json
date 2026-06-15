@@ -1,0 +1,118 @@
+{
+  "supplier_low_001": [
+    {
+      "id": "ev_low_registry_001",
+      "source": "mock_public_registry",
+      "category": "registration",
+      "title": "主体登记信息完整且经营状态正常",
+      "content": "模拟工商资料显示，Aster Precision Components Co., Ltd. 已持续经营 8 年，登记地址、税务识别、法定代表人和股权信息完整，未见经营异常。",
+      "severity": "info",
+      "rule_signals": [],
+      "economic_rationale": "稳定经营年限和完整主体信息降低逆向选择风险，也降低后续合同追索与发票合规的不确定性。",
+      "url": "mock://registry/aster"
+    },
+    {
+      "id": "ev_low_media_001",
+      "source": "mock_media_monitor",
+      "category": "adverse_media",
+      "title": "未发现重大负面舆情或公开处罚",
+      "content": "模拟公开信息未发现制裁、黑名单、重大失信、严重行政处罚、商业贿赂、欺诈或重大交付失败记录。",
+      "severity": "info",
+      "rule_signals": [],
+      "economic_rationale": "未发现重大负面记录并不等于零风险，但足以支持标准准入和年度复查。",
+      "url": "mock://media/aster"
+    },
+    {
+      "id": "ev_low_delivery_001",
+      "source": "mock_internal_reference",
+      "category": "delivery",
+      "title": "参考客户反馈交付稳定",
+      "content": "模拟客户访谈显示，近 12 个月按期交付率稳定，未发生重大质量索赔。",
+      "severity": "info",
+      "rule_signals": [],
+      "economic_rationale": "履约稳定性降低停线、返工和替代采购成本。",
+      "url": "mock://reference/aster-delivery"
+    }
+  ],
+  "supplier_medium_001": [
+    {
+      "id": "ev_medium_delivery_001",
+      "source": "mock_delivery_review",
+      "category": "delivery",
+      "title": "存在一次交付延期投诉",
+      "content": "模拟客户反馈显示，Nova Packaging Materials Ltd. 在旺季订单中出现一次交付延期投诉，供应商解释为上游纸浆价格波动和排产调整导致。",
+      "severity": "warning",
+      "rule_signals": ["single_late_delivery"],
+      "economic_rationale": "交付延期会抬高安全库存和替代采购成本，但单次、可解释的延期通常适合补充材料后复核。",
+      "url": "mock://delivery/nova-delay"
+    },
+    {
+      "id": "ev_medium_contract_001",
+      "source": "mock_contract_record",
+      "category": "contract_dispute",
+      "title": "存在轻微合同争议并已和解",
+      "content": "模拟司法与合同记录显示，该供应商曾因包装规格验收差异发生轻微合同争议，争议金额较小且已和解，无持续执行记录。",
+      "severity": "warning",
+      "rule_signals": ["minor_contract_dispute"],
+      "economic_rationale": "合同争议反映交易成本和质量一致性风险，已和解说明风险可控但仍需准入前确认改进措施。",
+      "url": "mock://contract/nova-settled"
+    },
+    {
+      "id": "ev_medium_amount_001",
+      "source": "mock_procurement_profile",
+      "category": "procurement_exposure",
+      "title": "年度框架采购金额较高",
+      "content": "本次拟合作金额为 180 万元，属于高于普通一次性采购的年度框架采购，应结合产能证明、主要客户证明和备货计划复核。",
+      "severity": "warning",
+      "rule_signals": ["high_procurement_amount"],
+      "economic_rationale": "采购暴露越高，供应商失败造成的转换成本、停供损失和谈判成本越高。",
+      "url": "mock://procurement/nova-exposure"
+    }
+  ],
+  "supplier_high_001": [
+    {
+      "id": "ev_high_sanction_001",
+      "source": "mock_sanction_screening",
+      "category": "sanction_screening",
+      "title": "疑似黑名单或制裁接近性风险",
+      "content": "模拟筛查显示，Northbridge Electronics Trading LLC 的受益所有人信息与行业观察名单中的主体存在高度相似，需要按制裁和黑名单命中风险升级审批。",
+      "severity": "critical",
+      "rule_signals": ["sanction_or_blacklist"],
+      "economic_rationale": "制裁或黑名单风险会造成付款冻结、合同无法履行、监管处罚和声誉损失，风险外部性显著高于普通商业风险。",
+      "url": "mock://sanctions/northbridge-electronics"
+    },
+    {
+      "id": "ev_high_transparency_001",
+      "source": "mock_public_registry",
+      "category": "registration",
+      "title": "境外主体信息不透明",
+      "content": "模拟登记资料显示，该供应商为境外贸易主体，成立 1 年，官网缺失，受益所有人、最终控制人和主要经营地址无法充分核验。",
+      "severity": "critical",
+      "rule_signals": ["overseas_opaque", "website_missing", "young_high_value_supplier"],
+      "economic_rationale": "信息不透明会加剧信息不对称，使采购方难以判断真实履约能力和合规责任归属。",
+      "url": "mock://registry/northbridge-electronics"
+    },
+    {
+      "id": "ev_high_payment_001",
+      "source": "mock_dispute_record",
+      "category": "payment_dispute",
+      "title": "多条付款纠纷记录",
+      "content": "模拟交易记录显示，该供应商过去 18 个月存在多条付款纠纷和合同履行争议，争议集中在预付款比例、货权转移和交付验收。",
+      "severity": "critical",
+      "rule_signals": ["multiple_payment_disputes", "multiple_contract_disputes"],
+      "economic_rationale": "付款纠纷会增加资金占用、诉讼成本和货权不确定性，在紧急采购中可能放大损失。",
+      "url": "mock://disputes/northbridge-payment"
+    },
+    {
+      "id": "ev_high_delivery_001",
+      "source": "mock_delivery_review",
+      "category": "delivery",
+      "title": "多条交付争议且本次为紧急采购",
+      "content": "模拟客户反馈显示，该供应商存在多条交付争议。本次采购为紧急采购且金额 500 万元，若发生停供将导致较高替代采购和生产中断成本。",
+      "severity": "critical",
+      "rule_signals": ["multiple_late_delivery", "urgent_incomplete_supplier"],
+      "economic_rationale": "紧急采购容易削弱议价和尽调质量，若叠加供应商信息不完整，会显著提高履约失败概率。",
+      "url": "mock://delivery/northbridge-disputes"
+    }
+  ]
+}

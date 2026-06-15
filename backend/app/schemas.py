@@ -8,8 +8,14 @@ class SupplierCreate(BaseModel):
     industry: str
     region: str
     annual_spend: float = Field(ge=0)
+    procurement_amount: float | None = Field(default=None, ge=0)
     cooperation_type: str
     sample_key: str | None = None
+    business_status: str | None = None
+    company_age_years: int | None = Field(default=None, ge=0)
+    profile_completeness: str | None = None
+    ownership_transparency: str | None = None
+    urgency: str | None = None
 
 
 class TaskCreate(BaseModel):
@@ -48,4 +54,3 @@ class TaskResponse(BaseModel):
 class ReportResponse(BaseModel):
     task_id: str
     markdown: str
-
