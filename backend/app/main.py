@@ -1,18 +1,17 @@
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.agents.orchestrator import Orchestrator
 from app.config import get_settings
 from app.database import init_db
-from app.repositories import create_task_record, get_report, get_task, list_events, save_review
+from app.repositories import get_report, get_task, list_events, list_evidence, save_review
 from app.schemas import ReportResponse, ReviewCreate, TaskCreate, TaskResponse
 from app.services.sample_service import get_sample_supplier, list_sample_suppliers
 from app.services.seed_service import seed_suppliers
+from app.services.task_service import TaskService
 from app.tools.mock_search_tool import MockSearchTool
 from app.tools.rag_policy_tool import RAGPolicyTool
 from app.tools.risk_rule_tool import RiskRuleTool
@@ -27,8 +26,8 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="SupplyGuard Agent API：供应商准入尽调与风险研判系统",
-    version="0.2.0",
-    description="本地 mock 数据驱动的供应商准入尽调、政策检索和规则评分 API。",
+    version="0.3.0",
+    description="本地 mock 数据驱动的供应商准入尽调、政策检索、规则评分、Agent 编排和 Markdown 报告 API。",
     lifespan=lifespan,
 )
 
@@ -76,16 +75,16 @@ def root() -> str:
 <body>
   <main>
     <h1>SupplyGuard Agent</h1>
-    <p>供应商准入尽调与风险研判系统。后端服务已启动，当前页面是中文导航首页；Swagger 仍是 FastAPI 自动文档，用于开发调试。</p>
+    <p>供应商准入尽调与风险研判系统。后端服务已启动，当前页面是中文导航首页；Swagger 是 FastAPI 自动接口文档，主要用于开发调试。</p>
     <div class="grid">
       {app_link}
       <a href="/docs">打开 API 文档 / Swagger</a>
       <a href="/health">查看健康检查 JSON</a>
       <a href="/api/samples/suppliers">查看样例供应商 JSON</a>
-      <a href="/api/tools/risk-assessment/supplier_high_001">查看高风险样例评分 JSON</a>
+      <a href="/docs">在 Swagger 中创建样例尽调任务</a>
       <a href="/api/tools/policy-search?query=制裁名单%20黑名单%20境外供应商">测试政策检索 JSON</a>
     </div>
-    <p>如果要开发前端，请打开 <code>http://127.0.0.1:5173</code>；如果只运行后端，构建后的前端可通过 <code>/app</code> 访问。</p>
+    <p>如需前端开发，请打开 <code>http://127.0.0.1:5173</code>；如只运行后端，构建后的前端可通过 <code>/app</code> 访问。</p>
   </main>
 </body>
 </html>
@@ -137,18 +136,25 @@ def policy_search(query: str = Query(..., min_length=1), top_k: int = 3) -> list
     return RAGPolicyTool().retrieve(query, top_k=top_k)
 
 
-@app.post("/api/diligence/tasks", response_model=TaskResponse, summary="创建尽调任务")
+@app.post("/api/diligence/tasks", response_model=TaskResponse, summary="创建自定义供应商尽调任务")
 def create_task(payload: TaskCreate) -> dict:
-    init_db()
-    task_id = create_task_record(payload.supplier)
-    Orchestrator().run(task_id, payload.supplier.model_dump())
-    task = get_task(task_id)
-    if not task:
-        raise HTTPException(status_code=500, detail="Task was not created")
-    return task
+    try:
+        return TaskService().create_task_from_payload(payload.supplier)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-@app.get("/api/diligence/tasks/{task_id}", response_model=TaskResponse, summary="读取尽调任务")
+@app.post("/api/diligence/tasks/from-sample/{supplier_id}", response_model=TaskResponse, summary="从样例供应商创建尽调任务")
+def create_task_from_sample(supplier_id: str) -> dict:
+    try:
+        return TaskService().create_task_from_sample(supplier_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.get("/api/diligence/tasks/{task_id}", response_model=TaskResponse, summary="读取尽调任务详情")
 def read_task(task_id: str) -> dict:
     task = get_task(task_id)
     if not task:
@@ -161,6 +167,13 @@ def read_events(task_id: str) -> list[dict]:
     if not get_task(task_id):
         raise HTTPException(status_code=404, detail="Task not found")
     return list_events(task_id)
+
+
+@app.get("/api/diligence/tasks/{task_id}/evidence", summary="读取任务证据链")
+def read_evidence(task_id: str) -> list[dict]:
+    if not get_task(task_id):
+        raise HTTPException(status_code=404, detail="Task not found")
+    return list_evidence(task_id)
 
 
 @app.get("/api/diligence/tasks/{task_id}/report", response_model=ReportResponse, summary="读取尽调报告")
@@ -177,4 +190,3 @@ def review_task(task_id: str, payload: ReviewCreate) -> dict[str, str]:
         raise HTTPException(status_code=404, detail="Task not found")
     save_review(task_id, payload.reviewer, payload.decision, payload.comment)
     return {"status": "saved"}
-

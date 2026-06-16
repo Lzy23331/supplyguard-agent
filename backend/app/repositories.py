@@ -82,7 +82,27 @@ def update_task(task_id: str, **fields: Any) -> None:
         conn.execute(f"UPDATE diligence_tasks SET {assignments} WHERE id=?", (*fields.values(), task_id))
 
 
-def add_event(task_id: str, agent_name: str, status: str, summary: str, tool_calls: list[dict[str, Any]] | None = None) -> None:
+def add_event(
+    task_id: str,
+    agent_name: str,
+    event_type: str,
+    status: str,
+    summary: str,
+    tool_name: str | None = None,
+    tool_input: dict[str, Any] | list[Any] | str | None = None,
+    tool_output_summary: str | None = None,
+    tool_calls: list[dict[str, Any]] | None = None,
+) -> None:
+    calls = tool_calls or []
+    if tool_name:
+        calls = [
+            *calls,
+            {
+                "tool_name": tool_name,
+                "tool_input": tool_input,
+                "tool_output_summary": tool_output_summary,
+            },
+        ]
     with get_db() as conn:
         conn.execute(
             """
@@ -90,7 +110,18 @@ def add_event(task_id: str, agent_name: str, status: str, summary: str, tool_cal
             (task_id, agent_name, event_type, status, summary, tool_name, tool_input, tool_output_summary, tool_calls, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (task_id, agent_name, status, status, summary, None, None, None, json.dumps(tool_calls or [], ensure_ascii=False), now_iso()),
+            (
+                task_id,
+                agent_name,
+                event_type,
+                status,
+                summary,
+                tool_name,
+                json.dumps(tool_input, ensure_ascii=False) if tool_input is not None else None,
+                tool_output_summary,
+                json.dumps(calls, ensure_ascii=False),
+                now_iso(),
+            ),
         )
 
 
@@ -133,6 +164,30 @@ def add_assessment(task_id: str, item: dict[str, Any]) -> None:
         )
 
 
+def save_risk_assessment(task_id: str, risk: dict[str, Any]) -> None:
+    with get_db() as conn:
+        task = conn.execute("SELECT supplier_id FROM diligence_tasks WHERE id=?", (task_id,)).fetchone()
+        conn.execute(
+            """
+            INSERT INTO risk_assessments
+            (task_id, supplier_id, raw_score, total_score, risk_level, dimension_scores, triggered_rules, recommendation, rationale, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                task_id,
+                task["supplier_id"] if task else None,
+                risk.get("raw_score"),
+                risk.get("total_score"),
+                risk.get("risk_level"),
+                json.dumps(risk.get("dimension_scores", {}), ensure_ascii=False),
+                json.dumps(risk.get("triggered_rules", risk.get("hit_rules", [])), ensure_ascii=False),
+                risk.get("recommendation"),
+                risk.get("rationale"),
+                now_iso(),
+            ),
+        )
+
+
 def save_report(task_id: str, markdown: str) -> None:
     with get_db() as conn:
         conn.execute(
@@ -159,6 +214,15 @@ def _decode_json(value: Any, fallback: Any) -> Any:
         return fallback
 
 
+def list_evidence(task_id: str) -> list[dict[str, Any]]:
+    with get_db() as conn:
+        rows = conn.execute("SELECT * FROM evidence_items WHERE task_id=? ORDER BY created_at, id", (task_id,)).fetchall()
+    evidence = [dict(row) for row in rows]
+    for item in evidence:
+        item["rule_signals"] = _decode_json(item.get("rule_signals"), [])
+    return evidence
+
+
 def get_task(task_id: str) -> dict[str, Any] | None:
     with get_db() as conn:
         row = conn.execute(
@@ -175,11 +239,14 @@ def get_task(task_id: str) -> dict[str, Any] | None:
         ).fetchone()
         if not row:
             return None
-        evidence = [dict(r) for r in conn.execute("SELECT * FROM evidence_items WHERE task_id=? ORDER BY created_at, id", (task_id,))]
-        dimensions = [dict(r) for r in conn.execute("SELECT * FROM risk_assessments WHERE task_id=? ORDER BY id", (task_id,))]
+        dimensions = [
+            dict(r)
+            for r in conn.execute(
+                "SELECT * FROM risk_assessments WHERE task_id=? AND dimension IS NOT NULL ORDER BY id",
+                (task_id,),
+            )
+        ]
     data = dict(row)
-    for item in evidence:
-        item["rule_signals"] = _decode_json(item.get("rule_signals"), [])
     return {
         "id": data["id"],
         "status": data["status"],
@@ -207,7 +274,7 @@ def get_task(task_id: str) -> dict[str, Any] | None:
             "tags": _decode_json(data["tags"], []),
             "expected_risk_level": data["expected_risk_level"],
         },
-        "evidence": evidence,
+        "evidence": list_evidence(task_id),
         "dimensions": dimensions,
     }
 
@@ -218,6 +285,7 @@ def list_events(task_id: str) -> list[dict[str, Any]]:
     events = []
     for row in rows:
         item = dict(row)
+        item["tool_input"] = _decode_json(item.get("tool_input"), None)
         item["tool_calls"] = _decode_json(item.get("tool_calls"), [])
         events.append(item)
     return events
@@ -238,4 +306,3 @@ def save_review(task_id: str, reviewer: str, decision: str, comment: str | None)
             """,
             (task_id, reviewer, decision, comment, now_iso()),
         )
-

@@ -139,6 +139,20 @@ Invoke-RestMethod "http://127.0.0.1:8000/api/tools/risk-assessment/supplier_high
 ```powershell
 Invoke-RestMethod "http://127.0.0.1:8000/api/tools/policy-search?query=制裁名单%20黑名单%20境外供应商"
 ```
+从样例供应商创建完整 Agent 尽调任务：
+
+```powershell
+Invoke-RestMethod -Method Post "http://127.0.0.1:8000/api/diligence/tasks/from-sample/supplier_high_001"
+```
+
+读取任务事件、证据和报告：
+
+```powershell
+$task = Invoke-RestMethod -Method Post "http://127.0.0.1:8000/api/diligence/tasks/from-sample/supplier_medium_001"
+Invoke-RestMethod "http://127.0.0.1:8000/api/diligence/tasks/$($task.id)/events"
+Invoke-RestMethod "http://127.0.0.1:8000/api/diligence/tasks/$($task.id)/evidence"
+Invoke-RestMethod "http://127.0.0.1:8000/api/diligence/tasks/$($task.id)/report"
+```
 
 ## 后续批次
 
@@ -146,3 +160,4 @@ Invoke-RestMethod "http://127.0.0.1:8000/api/tools/policy-search?query=制裁名
 2. 第四批：完善 HTTP API、Swagger 验证和后端测试。
 3. 第五批：完善 React 前端工作台。
 4. 第六批：完善文档、演示脚本、面试讲解和最终测试。
+

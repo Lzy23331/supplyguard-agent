@@ -9,76 +9,113 @@ class ReportExportTool:
         "business": "经营风险",
         "delivery": "交付风险",
         "completeness": "资料完整性",
-        "reputation": "舆情风险",
+        "reputation": "声誉风险",
     }
     SEVERITY_LABELS = {"info": "信息", "warning": "预警", "critical": "严重"}
-    CHECK_LABELS = {
-        "identity verification": "主体身份核验",
-        "compliance screening": "合规筛查",
-        "business stability": "经营稳定性评估",
-        "delivery continuity": "交付连续性评估",
-        "high value procurement approval": "高金额采购审批",
-    }
+
+    def _dimension_table(self, risk: dict[str, Any]) -> str:
+        lines = ["| 风险维度 | 分数 | 等级 | 判断依据 |", "| --- | ---: | --- | --- |"]
+        for item in risk.get("dimensions", []):
+            lines.append(
+                f"| {self.DIMENSION_LABELS.get(item.get('dimension'), item.get('dimension'))} "
+                f"| {item.get('score')} | {self.LEVEL_LABELS.get(item.get('level'), item.get('level'))} "
+                f"| {item.get('rationale')} |"
+            )
+        return "\n".join(lines)
+
+    def _triggered_rules(self, risk: dict[str, Any]) -> str:
+        rules = risk.get("triggered_rules") or risk.get("hit_rules") or []
+        if not rules:
+            return "- 未命中加分规则。"
+        lines = []
+        for item in rules:
+            rule_name = item.get("rule_name") or item.get("rule")
+            score = item.get("score") or item.get("points")
+            dimension = self.DIMENSION_LABELS.get(item.get("dimension"), item.get("dimension"))
+            evidence = item.get("evidence_ids") or item.get("evidence_source") or item.get("reason")
+            lines.append(f"- `{item.get('rule_id', rule_name)}` {rule_name}（{dimension}，+{score}）：证据来源 {evidence}")
+        return "\n".join(lines)
+
+    def _evidence_lines(self, evidence: list[dict[str, Any]]) -> str:
+        if not evidence:
+            return "- 暂无证据。"
+        return "\n".join(
+            f"- **{item.get('title')}** [{self.SEVERITY_LABELS.get(item.get('severity', 'info'), item.get('severity', 'info'))}]：{item.get('content')}"
+            for item in evidence
+        )
+
+    def _policy_lines(self, policies: list[dict[str, Any]]) -> str:
+        if not policies:
+            return "- 未检索到明确政策片段，建议人工复核政策库。"
+        lines = []
+        for item in policies:
+            doc = item.get("doc_name") or item.get("document")
+            section = item.get("section_title") or "相关条款"
+            keywords = "、".join(item.get("matched_keywords") or item.get("keywords") or [])
+            content = (item.get("content") or item.get("chunk") or "").strip().replace("\n", " ")
+            excerpt = content[:220] + ("..." if len(content) > 220 else "")
+            lines.append(f"- **{doc} / {section}**（关键词：{keywords or '无'}）：{excerpt}")
+        return "\n".join(lines)
 
     def build_markdown(
         self,
         supplier: dict[str, Any],
-        plan: dict[str, Any],
         evidence: list[dict[str, Any]],
         risk: dict[str, Any],
         policies: list[dict[str, Any]],
+        compliance_summary: dict[str, Any] | None = None,
+        business_summary: dict[str, Any] | None = None,
+        plan: dict[str, Any] | None = None,
     ) -> str:
-        evidence_lines = "\n".join(
-            f"- **{item['title']}** [{self.SEVERITY_LABELS.get(item.get('severity', 'info'), item.get('severity', 'info'))}]: {item['content']}" for item in evidence
-        )
-        dimension_lines = "\n".join(
-            f"| {self.DIMENSION_LABELS.get(d['dimension'], d['dimension'])} | {d['score']} | {self.LEVEL_LABELS.get(d['level'], d['level'])} | {d['rationale']} |" for d in risk["dimensions"]
-        )
-        hit_rule_lines = "\n".join(
-            f"- `{item['rule']}` ({self.DIMENSION_LABELS.get(item['dimension'], item['dimension'])}, +{item['points']}): {item['evidence_source']}" for item in risk.get("hit_rules", [])
-        ) or "- 未命中加分规则。"
-        policy_lines = "\n".join(f"- `{p['document']}`：{p['chunk'][:180]}..." for p in policies) or "- 未检索到明确政策片段。"
-        checks = [self.CHECK_LABELS.get(check, check) for check in plan["checks"]]
-        risk_level = self.LEVEL_LABELS.get(risk["risk_level"], risk["risk_level"])
-        raw_score_note = ""
-        if risk.get("raw_score", risk["total_score"]) > risk["total_score"]:
-            raw_score_note = f"\n- 原始累计风险分：**{risk['raw_score']}**，按评分规则截断为 **{risk['total_score']} / 100**。"
-        return f"""# 供应商准入尽调报告：{supplier['name']}
+        risk_level = self.LEVEL_LABELS.get(risk.get("risk_level"), risk.get("risk_level"))
+        raw_score = risk.get("raw_score", risk.get("total_score"))
+        total_score = risk.get("total_score")
+        cap_note = ""
+        if raw_score is not None and total_score is not None and raw_score > total_score:
+            cap_note = f"\n\n该供应商原始累计风险分为 **{raw_score}**，超过评分上限，系统按规则将总分截断为 **{total_score} / 100**。"
+        checks = "、".join((plan or {}).get("checks", [])) or "标准供应商准入尽调"
+        compliance_rules = compliance_summary.get("key_rules", []) if compliance_summary else []
+        business_rules = business_summary.get("triggered_rules", []) if business_summary else []
 
-## 一、结论摘要
+        return f"""# 供应商准入尽调报告
 
-- 风险等级：**{risk_level}**
-- 综合评分：**{risk['total_score']} / 100**
-- 准入建议：**{risk['recommendation']}**
-- 尽调范围：{'、'.join(checks)}{raw_score_note}
-
-## 二、供应商画像
-
-- 官网：{supplier.get('website') or 'N/A'}
-- 行业：{supplier.get('industry')}
-- 地区：{supplier.get('region')}
+## 1. 基本信息
+- 供应商名称：**{supplier.get('name')}**
+- 官网：{supplier.get('website') or '未提供'}
+- 行业：{supplier.get('industry') or '未提供'}
+- 地区：{supplier.get('region') or '未提供'}
 - 年采购金额：{supplier.get('annual_spend')}
-- 合作类型：{supplier.get('cooperation_type')}
+- 合作类型：{supplier.get('cooperation_type') or '未提供'}
+- 尽调范围：{checks}
 
-## 三、风险评估
+## 2. 综合结论
+- 内部风险等级：**{risk.get('risk_level')}**（前端展示：{risk_level}）
+- 综合评分：**{total_score} / 100**
+- 准入建议：**{risk.get('recommendation')}**{cap_note}
 
-| 风险维度 | 评分 | 等级 | 判断依据 |
-| --- | ---: | --- | --- |
-{dimension_lines}
+## 3. 风险评分
+{self._dimension_table(risk)}
 
-## 四、命中规则
+命中规则：
+{self._triggered_rules(risk)}
 
-{hit_rule_lines}
+## 4. 合规风险分析
+合规风险重点来自制裁名单、黑名单、出口管制、受益所有人透明度、行政处罚、商业贿赂或欺诈等信号。本次命中合规规则 {len(compliance_rules)} 条，需结合政策片段和证据链判断是否准入、升级审批或拒绝准入。
 
-## 五、证据链
+## 5. 经营与交付风险分析
+经营与交付风险重点来自采购暴露、交付延期、合同争议、付款纠纷、资料缺失和补充材料情况。本次命中经营交付类规则 {len(business_rules)} 条，需判断供应商是否具备稳定履约能力。
 
-{evidence_lines}
+## 6. 关键证据链
+{self._evidence_lines(evidence)}
 
-## 六、政策依据
+## 7. 命中政策依据
+{self._policy_lines(policies)}
 
-{policy_lines}
+## 8. 准入建议
+{risk.get('recommendation')}
 
-## 七、人工复核建议
-
-{risk['recommendation']}
+## 9. 人工复核建议
+- low：资料完整且未发现关键风险时，可按标准准入并纳入年度复查。
+- medium：建议补充材料，必要时由采购、法务或合规进行人工复核。
+- high：建议拒绝准入或提交升级审批，并保留完整证据链与政策依据。
 """
