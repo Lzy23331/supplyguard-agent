@@ -53,44 +53,44 @@ class RiskRuleTool:
                 dimension, points = self.SIGNAL_SCORES.get(signal, ("compliance", 5))
                 add_rule(signal, dimension, points, source, rationale)
             if severity == "critical" and any(term.lower() in text for term in self.HIGH_TERMS):
-                add_rule("critical_compliance_signal", "compliance", 35, source, "Critical evidence contains sanctions, blacklist, bribery, fraud or major dishonesty language.")
+                add_rule("critical_compliance_signal", "compliance", 35, source, "严重证据包含制裁、黑名单、商业贿赂、欺诈或重大失信等合规风险表述。")
             elif severity == "warning" and any(term.lower() in text for term in self.MEDIUM_TERMS):
-                add_rule("warning_business_or_delivery_signal", "delivery", 10, source, "Warning evidence contains litigation, dispute, delay or complaint language.")
+                add_rule("warning_business_or_delivery_signal", "delivery", 10, source, "预警证据包含诉讼、争议、延期或投诉等经营交付风险表述。")
 
         spend = supplier.get("procurement_amount") or supplier.get("annual_spend") or 0
         if supplier.get("website") in (None, ""):
-            add_rule("website_missing", "completeness", 5, "supplier_profile", "Missing website increases verification cost and identity uncertainty.")
+            add_rule("website_missing", "completeness", 5, "supplier_profile", "官网缺失会增加主体核验成本和身份不确定性。")
         if not supplier.get("region"):
-            add_rule("region_missing", "completeness", 5, "supplier_profile", "Missing region makes jurisdiction and enforcement review harder.")
+            add_rule("region_missing", "completeness", 5, "supplier_profile", "地区缺失会增加司法辖区和合同执行判断难度。")
         if not supplier.get("industry"):
-            add_rule("industry_missing", "completeness", 5, "supplier_profile", "Missing industry weakens category-specific risk review.")
+            add_rule("industry_missing", "completeness", 5, "supplier_profile", "行业缺失会削弱品类相关风险判断。")
         if not supplier.get("cooperation_type"):
-            add_rule("cooperation_type_missing", "completeness", 5, "supplier_profile", "Missing cooperation type makes exposure and control design unclear.")
+            add_rule("cooperation_type_missing", "completeness", 5, "supplier_profile", "合作类型缺失会影响采购暴露和控制措施设计。")
         if supplier.get("business_status") in {"异常", "信息不透明", "停业", "注销"}:
-            add_rule("business_abnormal", "business", 25, "supplier_profile", "Abnormal or opaque business status increases counterparty failure probability.")
+            add_rule("business_abnormal", "business", 25, "supplier_profile", "经营状态异常或信息不透明会提高交易对手履约失败概率。")
         if supplier.get("profile_completeness") == "低":
-            add_rule("registration_gaps", "business", 15, "supplier_profile", "Low profile completeness increases due diligence cost and adverse selection risk.")
+            add_rule("registration_gaps", "business", 15, "supplier_profile", "资料完整性低会增加尽调成本和逆向选择风险。")
         if supplier.get("profile_completeness") == "中":
-            add_rule("medium_profile_completeness", "completeness", 5, "supplier_profile", "Medium profile completeness requires supplementary verification before onboarding.")
+            add_rule("medium_profile_completeness", "completeness", 5, "supplier_profile", "资料完整性中等，准入前需要补充核验材料。")
         if supplier.get("ownership_transparency") == "低":
-            add_rule("beneficial_owner_missing", "completeness", 10, "supplier_profile", "Low beneficial ownership transparency makes accountability and sanctions screening harder.")
+            add_rule("beneficial_owner_missing", "completeness", 10, "supplier_profile", "受益所有人透明度低会增加问责和制裁筛查难度。")
         if supplier.get("ownership_transparency") == "中":
-            add_rule("medium_ownership_transparency", "completeness", 5, "supplier_profile", "Medium ownership transparency leaves residual verification work for human review.")
+            add_rule("medium_ownership_transparency", "completeness", 5, "supplier_profile", "受益所有人透明度中等，仍需人工复核剩余不确定性。")
         if (supplier.get("company_age_years") or 99) < 2 and spend >= 1000000:
-            add_rule("young_high_value_supplier", "business", 15, "supplier_profile", "A young supplier with high spend creates continuity and bargaining-power risk.")
+            add_rule("young_high_value_supplier", "business", 15, "supplier_profile", "成立时间短且采购金额高，会增加供应连续性和议价风险。")
         if spend >= 1000000:
-            add_rule("high_procurement_amount", "business", 10, "supplier_profile", "Higher procurement exposure increases replacement, interruption and dispute costs.")
+            add_rule("high_procurement_amount", "business", 10, "supplier_profile", "采购暴露越高，替代采购、停供和争议成本越高。")
         if supplier.get("urgency") == "紧急" and supplier.get("profile_completeness") == "低":
-            add_rule("urgent_incomplete_supplier", "delivery", 15, "supplier_profile", "Urgency plus incomplete information weakens negotiation and diligence quality.")
+            add_rule("urgent_incomplete_supplier", "delivery", 15, "supplier_profile", "紧急采购叠加信息不完整，会削弱议价能力和尽调质量。")
 
         total = min(raw_score, 100)
         level = "high" if has_critical and total >= 70 else self._level(total)
         dimensions = [
-            self._dimension("compliance", self._sum(hit_rules, "compliance"), "Covers sanctions, blacklist, bribery, fraud, major dishonesty and opaque overseas ownership."),
-            self._dimension("business", self._sum(hit_rules, "business"), "Covers operating status, information transparency, supplier maturity and procurement exposure."),
-            self._dimension("delivery", self._sum(hit_rules, "delivery"), "Covers late delivery, payment disputes, contract disputes and urgent procurement execution risk."),
-            self._dimension("completeness", self._sum(hit_rules, "completeness"), "Covers missing identity, geography, category, cooperation and ownership materials."),
-            self._dimension("reputation", self._sum(hit_rules, "reputation"), "Covers adverse media, complaints and public dispute signals."),
+            self._dimension("compliance", self._sum(hit_rules, "compliance"), "覆盖制裁、黑名单、商业贿赂、欺诈、重大失信和境外主体不透明风险。"),
+            self._dimension("business", self._sum(hit_rules, "business"), "覆盖经营状态、信息透明度、供应商成熟度和采购金额暴露。"),
+            self._dimension("delivery", self._sum(hit_rules, "delivery"), "覆盖交付延期、付款纠纷、合同争议和紧急采购执行风险。"),
+            self._dimension("completeness", self._sum(hit_rules, "completeness"), "覆盖主体身份、地区、行业、合作类型和受益所有人资料缺失。"),
+            self._dimension("reputation", self._sum(hit_rules, "reputation"), "覆盖负面舆情、客户投诉和公开争议信号。"),
         ]
         recommendation = {
             "low": "建议准入，并按标准年度监控机制持续跟踪。",
@@ -133,4 +133,5 @@ class RiskRuleTool:
         if score >= 40:
             return "medium"
         return "low"
+
 

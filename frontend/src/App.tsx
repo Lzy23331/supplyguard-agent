@@ -6,10 +6,10 @@ import { AgentEvent, api, DiligenceTask, SupplierInput } from "./api/client";
 const emptySupplier: SupplierInput = {
   name: "",
   website: "",
-  industry: "工业零部件",
-  region: "新加坡",
-  annual_spend: 180000,
-  cooperation_type: "标准零部件供应商"
+  industry: "精密零部件",
+  region: "江苏苏州",
+  annual_spend: 500000,
+  cooperation_type: "标准采购"
 };
 
 const riskLabels: Record<string, string> = {
@@ -21,9 +21,11 @@ const riskLabels: Record<string, string> = {
 const statusLabels: Record<string, string> = {
   idle: "未开始",
   created: "已创建",
+  pending: "待执行",
   running: "执行中",
   completed: "已完成",
-  failed: "失败"
+  failed: "失败",
+  reviewed: "已复核"
 };
 
 const dimensionLabels: Record<string, string> = {
@@ -39,6 +41,37 @@ const severityLabels: Record<string, string> = {
   warning: "预警",
   critical: "严重"
 };
+
+const agentLabels: Record<string, string> = {
+  IntakeAgent: "准入受理 Agent",
+  EvidenceCollectorAgent: "证据收集 Agent",
+  ComplianceRiskAgent: "合规风险 Agent",
+  BusinessRiskAgent: "经营交付 Agent",
+  ReportAgent: "报告生成 Agent",
+  Orchestrator: "编排器"
+};
+
+const toolLabels: Record<string, string> = {
+  MockSearchTool: "模拟搜索工具",
+  EvidenceStoreTool: "证据存储工具",
+  RAGPolicyTool: "政策检索工具",
+  RiskRuleTool: "风险规则工具",
+  ReportExportTool: "报告生成工具"
+};
+
+function formatAmount(value?: number) {
+  if (typeof value !== "number") return "--";
+  return new Intl.NumberFormat("zh-CN", { style: "currency", currency: "CNY", maximumFractionDigits: 0 }).format(value);
+}
+
+function formatToolCall(call: Record<string, unknown>) {
+  const tool = typeof call.tool === "string" ? toolLabels[call.tool] ?? call.tool : "工具调用";
+  const details = Object.entries(call)
+    .filter(([key]) => key !== "tool")
+    .map(([key, value]) => `${key}: ${String(value)}`)
+    .join("，");
+  return details ? `${tool}（${details}）` : tool;
+}
 
 function App() {
   const [samples, setSamples] = useState<SupplierInput[]>([]);
@@ -81,7 +114,7 @@ function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${task?.supplier.name ?? "supplier"}-尽调报告.md`;
+    link.download = `${task?.supplier.name ?? "供应商"}-尽调报告.md`;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -108,7 +141,7 @@ function App() {
               }}
             >
               <Sparkles size={16} />
-              {riskLabels[item.sample_key ?? ""] ?? item.sample_key}
+              {riskLabels[item.sample_key ?? ""] ?? item.sample_key ?? "样例"}
             </button>
           ))}
         </div>
@@ -190,15 +223,21 @@ function App() {
                 <CheckCircle2 size={18} />
                 <div>
                   <div className="event-head">
-                    <strong>{event.agent_name}</strong>
+                    <strong>{agentLabels[event.agent_name] ?? event.agent_name}</strong>
                     <span>{statusLabels[event.status] ?? event.status}</span>
                   </div>
                   <p>{event.summary}</p>
-                  {event.tool_calls.length > 0 && <code>{JSON.stringify(event.tool_calls)}</code>}
+                  {event.tool_calls.length > 0 && (
+                    <ul className="tool-list">
+                      {event.tool_calls.map((call, index) => (
+                        <li key={index}>{formatToolCall(call)}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </article>
             ))}
-            {!events.length && <p className="muted">请创建任务，或选择一个样例供应商。</p>}
+            {!events.length && <p className="muted">请选择一个样例供应商，或填写表单后创建尽调任务。</p>}
           </div>
         </section>
 
@@ -231,10 +270,10 @@ function App() {
           <div className="panel-actions">
             <h2>尽调报告</h2>
             <div>
-              <button onClick={() => void navigator.clipboard.writeText(report)} disabled={!report}>
+              <button title="复制报告" onClick={() => void navigator.clipboard.writeText(report)} disabled={!report}>
                 <Clipboard size={16} />
               </button>
-              <button onClick={downloadReport} disabled={!report}>
+              <button title="下载 Markdown 报告" onClick={downloadReport} disabled={!report}>
                 <Download size={16} />
               </button>
             </div>
@@ -247,6 +286,3 @@ function App() {
 }
 
 export default App;
-
-
-
