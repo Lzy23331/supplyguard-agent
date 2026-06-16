@@ -1,7 +1,7 @@
 [
   {
     "sample_key": "low",
-    "risk_profile": "Low",
+    "risk_profile": "low",
     "name": "GreenFlow Components Ltd.",
     "website": "https://greenflow.example.com",
     "industry": "工业零部件",
@@ -28,7 +28,7 @@
   },
   {
     "sample_key": "medium",
-    "risk_profile": "Medium",
+    "risk_profile": "medium",
     "name": "Northbridge Packaging Co.",
     "website": "https://northbridge.example.com",
     "industry": "包装材料",
@@ -55,7 +55,7 @@
   },
   {
     "sample_key": "high",
-    "risk_profile": "High",
+    "risk_profile": "high",
     "name": "Redstone Metals Trading",
     "website": "https://redstone-metals.example.com",
     "industry": "金属贸易",
@@ -81,3 +81,4 @@
     ]
   }
 ]
+

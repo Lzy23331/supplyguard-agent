@@ -3,8 +3,14 @@ from typing import Any
 
 class ReportExportTool:
     name = "ReportExportTool"
-    LEVEL_LABELS = {"Low": "低风险", "Medium": "中风险", "High": "高风险"}
-    DIMENSION_LABELS = {"Compliance": "合规风险", "Business": "经营风险", "Delivery": "交付风险"}
+    LEVEL_LABELS = {"low": "低风险", "medium": "中风险", "high": "高风险"}
+    DIMENSION_LABELS = {
+        "compliance": "合规风险",
+        "business": "经营风险",
+        "delivery": "交付风险",
+        "completeness": "资料完整性",
+        "reputation": "舆情风险",
+    }
     SEVERITY_LABELS = {"info": "信息", "warning": "预警", "critical": "严重"}
     CHECK_LABELS = {
         "identity verification": "主体身份核验",
@@ -28,9 +34,15 @@ class ReportExportTool:
         dimension_lines = "\n".join(
             f"| {self.DIMENSION_LABELS.get(d['dimension'], d['dimension'])} | {d['score']} | {self.LEVEL_LABELS.get(d['level'], d['level'])} | {d['rationale']} |" for d in risk["dimensions"]
         )
+        hit_rule_lines = "\n".join(
+            f"- `{item['rule']}` ({self.DIMENSION_LABELS.get(item['dimension'], item['dimension'])}, +{item['points']}): {item['evidence_source']}" for item in risk.get("hit_rules", [])
+        ) or "- 未命中加分规则。"
         policy_lines = "\n".join(f"- `{p['document']}`：{p['chunk'][:180]}..." for p in policies) or "- 未检索到明确政策片段。"
         checks = [self.CHECK_LABELS.get(check, check) for check in plan["checks"]]
         risk_level = self.LEVEL_LABELS.get(risk["risk_level"], risk["risk_level"])
+        raw_score_note = ""
+        if risk.get("raw_score", risk["total_score"]) > risk["total_score"]:
+            raw_score_note = f"\n- 原始累计风险分：**{risk['raw_score']}**，按评分规则截断为 **{risk['total_score']} / 100**。"
         return f"""# 供应商准入尽调报告：{supplier['name']}
 
 ## 一、结论摘要
@@ -38,7 +50,7 @@ class ReportExportTool:
 - 风险等级：**{risk_level}**
 - 综合评分：**{risk['total_score']} / 100**
 - 准入建议：**{risk['recommendation']}**
-- 尽调范围：{'、'.join(checks)}
+- 尽调范围：{'、'.join(checks)}{raw_score_note}
 
 ## 二、供应商画像
 
@@ -54,15 +66,19 @@ class ReportExportTool:
 | --- | ---: | --- | --- |
 {dimension_lines}
 
-## 四、证据链
+## 四、命中规则
+
+{hit_rule_lines}
+
+## 五、证据链
 
 {evidence_lines}
 
-## 五、政策依据
+## 六、政策依据
 
 {policy_lines}
 
-## 六、人工复核建议
+## 七、人工复核建议
 
 {risk['recommendation']}
 """

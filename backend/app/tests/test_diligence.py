@@ -23,7 +23,7 @@ def test_create_task_and_events_report():
     assert response.status_code == 200
     task = response.json()
     assert task["status"] == "completed"
-    assert task["risk_level"] == "Low"
+    assert task["risk_level"] == "low"
     assert task["total_score"] < 40
 
     events = client.get(f"/api/diligence/tasks/{task['id']}/events").json()
@@ -38,12 +38,16 @@ def test_create_task_and_events_report():
 
 
 def test_sample_suppliers_generate_different_risk_levels():
-    expected = {"low": "Low", "medium": "Medium", "high": "High"}
+    expected = {"low": "low", "medium": "medium", "high": "high"}
     for sample in list_sample_suppliers():
         response = client.post("/api/diligence/tasks", json={"supplier": sample})
         assert response.status_code == 200
         task = response.json()
         assert task["risk_level"] == expected[sample["sample_key"]]
+        if sample["sample_key"] == "medium":
+            assert 45 <= task["total_score"] <= 55
+        if sample["sample_key"] == "high":
+            assert task["total_score"] == 100
 
 
 def test_mock_search_returns_structured_economic_evidence():
@@ -73,6 +77,8 @@ def test_risk_rule_tool_hits_high_risk():
         ],
         {"annual_spend": 2000000, "procurement_amount": 2000000},
     )
-    assert risk["risk_level"] == "High"
+    assert risk["risk_level"] == "high"
+    assert risk["raw_score"] >= risk["total_score"]
     assert risk["total_score"] >= 70
-    assert risk["hit_rules"]
+    assert all({"rule", "dimension", "points", "evidence_source"}.issubset(item) for item in risk["hit_rules"])
+

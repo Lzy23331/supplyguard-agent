@@ -13,9 +13,6 @@ const emptySupplier: SupplierInput = {
 };
 
 const riskLabels: Record<string, string> = {
-  Low: "低风险",
-  Medium: "中风险",
-  High: "高风险",
   low: "低风险",
   medium: "中风险",
   high: "高风险"
@@ -30,9 +27,11 @@ const statusLabels: Record<string, string> = {
 };
 
 const dimensionLabels: Record<string, string> = {
-  Compliance: "合规风险",
-  Business: "经营风险",
-  Delivery: "交付风险"
+  compliance: "合规风险",
+  business: "经营风险",
+  delivery: "交付风险",
+  completeness: "资料完整性",
+  reputation: "舆情风险"
 };
 
 const severityLabels: Record<string, string> = {
@@ -248,3 +247,6 @@ function App() {
 }
 
 export default App;
+
+
+

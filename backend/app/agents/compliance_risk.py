@@ -17,7 +17,7 @@ class ComplianceRiskAgent(BaseAgent):
         risk = self.rule_tool.assess(context["evidence"], context["supplier"])
         context["policies"] = policies
         context["risk"] = risk
-        compliance = next(d for d in risk["dimensions"] if d["dimension"] == "Compliance")
+        compliance = next(d for d in risk["dimensions"] if d["dimension"] == "compliance")
         add_assessment(context["task_id"], compliance)
         self.event(
             context["task_id"],
@@ -26,3 +26,4 @@ class ComplianceRiskAgent(BaseAgent):
             [{"tool": self.rag_tool.name, "matches": len(policies)}, {"tool": self.rule_tool.name}],
         )
         return context
+

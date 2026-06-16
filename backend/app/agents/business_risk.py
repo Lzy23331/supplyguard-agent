@@ -1,13 +1,13 @@
 from app.agents.base import AgentContext, BaseAgent
 from app.repositories import add_assessment
 
-LEVEL_LABELS = {"Low": "低风险", "Medium": "中风险", "High": "高风险"}
+LEVEL_LABELS = {"low": "低风险", "medium": "中风险", "high": "高风险"}
 DIMENSION_LABELS = {
-    "Compliance": "合规风险",
-    "Business": "经营风险",
-    "Delivery": "交付风险",
-    "Completeness": "资料完整性",
-    "Reputation": "舆情风险",
+    "compliance": "合规风险",
+    "business": "经营风险",
+    "delivery": "交付风险",
+    "completeness": "资料完整性",
+    "reputation": "舆情风险",
 }
 
 
@@ -16,7 +16,7 @@ class BusinessRiskAgent(BaseAgent):
 
     def run(self, context: AgentContext) -> AgentContext:
         for item in context["risk"]["dimensions"]:
-            if item["dimension"] != "Compliance":
+            if item["dimension"] != "compliance":
                 add_assessment(context["task_id"], item)
         levels = {
             DIMENSION_LABELS.get(d["dimension"], d["dimension"]): LEVEL_LABELS.get(d["level"], d["level"])

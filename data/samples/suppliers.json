@@ -2,8 +2,8 @@
   {
     "id": "supplier_low_001",
     "sample_key": "low",
-    "risk_profile": "Low",
-    "expected_risk_level": "Low",
+    "risk_profile": "low",
+    "expected_risk_level": "low",
     "name": "Aster Precision Components Co., Ltd.",
     "website": "https://example.com/aster",
     "industry": "精密零部件",
@@ -23,8 +23,8 @@
   {
     "id": "supplier_medium_001",
     "sample_key": "medium",
-    "risk_profile": "Medium",
-    "expected_risk_level": "Medium",
+    "risk_profile": "medium",
+    "expected_risk_level": "medium",
     "name": "Nova Packaging Materials Ltd.",
     "website": "https://example.com/nova-packaging",
     "industry": "包装材料",
@@ -44,8 +44,8 @@
   {
     "id": "supplier_high_001",
     "sample_key": "high",
-    "risk_profile": "High",
-    "expected_risk_level": "High",
+    "risk_profile": "high",
+    "expected_risk_level": "high",
     "name": "Northbridge Electronics Trading LLC",
     "website": null,
     "industry": "电子元器件贸易",
@@ -63,3 +63,4 @@
     "demo_reason": "用于展示高风险供应商如何被规则引擎判定为拒绝或升级审批。"
   }
 ]
+

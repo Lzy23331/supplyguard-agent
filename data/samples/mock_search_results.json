@@ -64,7 +64,7 @@
       "title": "年度框架采购金额较高",
       "content": "本次拟合作金额为 180 万元，属于高于普通一次性采购的年度框架采购，应结合产能证明、主要客户证明和备货计划复核。",
       "severity": "warning",
-      "rule_signals": ["high_procurement_amount"],
+      "rule_signals": ["high_procurement_amount", "supplementary_performance_materials_missing"],
       "economic_rationale": "采购暴露越高，供应商失败造成的转换成本、停供损失和谈判成本越高。",
       "url": "mock://procurement/nova-exposure"
     }
@@ -116,3 +116,4 @@
     }
   ]
 }
+

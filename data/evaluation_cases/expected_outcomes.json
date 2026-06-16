@@ -1,6 +1,7 @@
 [
-  {"sample_key": "low", "expected_risk_level": "Low"},
-  {"sample_key": "medium", "expected_risk_level": "Medium"},
-  {"sample_key": "high", "expected_risk_level": "High"}
+  {"sample_key": "low", "expected_risk_level": "low"},
+  {"sample_key": "medium", "expected_risk_level": "medium"},
+  {"sample_key": "high", "expected_risk_level": "high"}
 ]
+
 
