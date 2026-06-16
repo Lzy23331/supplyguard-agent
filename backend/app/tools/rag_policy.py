@@ -1,4 +1,6 @@
 import re
+from typing import Any
+
 from app.config import get_settings
 from app.tools.document_parser import DocumentParserTool
 
@@ -7,19 +9,31 @@ class RAGPolicyTool:
     name = "RAGPolicyTool"
 
     def __init__(self) -> None:
-        self.policy_dir = get_settings().project_root / "data" / "policies"
+        self.policy_dir = get_settings().policies_dir
         self.parser = DocumentParserTool()
 
-    def retrieve(self, query: str, top_k: int = 4) -> list[dict[str, str | int]]:
-        terms = {t.lower() for t in re.findall(r"[\w\u4e00-\u9fff]+", query) if len(t) > 1}
-        chunks = []
-        for doc in self.parser.read_documents(self.policy_dir):
-            for idx, chunk in enumerate(re.split(r"\n#{1,3} ", doc["content"])):
-                text = chunk.strip()
-                if not text:
-                    continue
-                haystack = text.lower()
-                score = sum(1 for term in terms if term in haystack)
-                if score:
-                    chunks.append({"document": doc["name"], "chunk": text[:800], "score": score, "index": idx})
-        return sorted(chunks, key=lambda item: item["score"], reverse=True)[:top_k]
+    def retrieve(self, query: str, top_k: int = 3) -> list[dict[str, Any]]:
+        terms = self._terms(query)
+        results: list[dict[str, Any]] = []
+        for chunk in self.parser.parse_policy_chunks(self.policy_dir):
+            title = chunk["section_title"].lower()
+            keyword_text = " ".join(chunk.get("keywords", [])).lower()
+            content = chunk["content"].lower()
+            score = 0
+            matched: set[str] = set()
+            for term in terms:
+                if term in title:
+                    score += 3
+                    matched.add(term)
+                if term in keyword_text:
+                    score += 2
+                    matched.add(term)
+                if term in content:
+                    score += 1
+                    matched.add(term)
+            if score:
+                results.append({**chunk, "score": score, "matched_keywords": sorted(matched), "document": chunk["doc_name"], "chunk": chunk["content"][:800]})
+        return sorted(results, key=lambda item: (item["score"], len(item["matched_keywords"])), reverse=True)[:top_k]
+
+    def _terms(self, query: str) -> set[str]:
+        return {term.lower() for term in re.findall(r"[\w\u4e00-\u9fff]+", query) if len(term) > 1}

@@ -2,7 +2,11 @@ import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 from .config import get_settings
+from .models.db_models import Base
 
 
 def _db_path() -> Path:
@@ -10,7 +14,18 @@ def _db_path() -> Path:
     if not url.startswith("sqlite:///"):
         raise ValueError("Only sqlite:/// database URLs are supported in this demo")
     path = url.replace("sqlite:///", "", 1)
-    return (Path(__file__).resolve().parents[1] / path).resolve()
+    raw = Path(path)
+    if raw.is_absolute():
+        return raw
+    return (Path(__file__).resolve().parents[1] / raw).resolve()
+
+
+def _sqlite_url() -> str:
+    return f"sqlite:///{_db_path().as_posix()}"
+
+
+engine = create_engine(_sqlite_url(), connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 @contextmanager
@@ -26,74 +41,40 @@ def get_db():
         conn.close()
 
 
-def init_db() -> None:
-    with get_db() as conn:
-        conn.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS suppliers (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                website TEXT,
-                industry TEXT,
-                region TEXT,
-                annual_spend REAL,
-                cooperation_type TEXT,
-                sample_key TEXT,
-                created_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS diligence_tasks (
-                id TEXT PRIMARY KEY,
-                supplier_id INTEGER NOT NULL,
-                status TEXT NOT NULL,
-                risk_level TEXT,
-                total_score INTEGER,
-                recommendation TEXT,
-                created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL,
-                FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
-            );
-            CREATE TABLE IF NOT EXISTS evidence_items (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_id TEXT NOT NULL,
-                source TEXT NOT NULL,
-                title TEXT NOT NULL,
-                content TEXT NOT NULL,
-                severity TEXT NOT NULL,
-                url TEXT,
-                created_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS risk_assessments (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_id TEXT NOT NULL,
-                dimension TEXT NOT NULL,
-                score INTEGER NOT NULL,
-                level TEXT NOT NULL,
-                rationale TEXT NOT NULL,
-                created_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS reports (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_id TEXT NOT NULL UNIQUE,
-                markdown TEXT NOT NULL,
-                created_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS human_reviews (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_id TEXT NOT NULL,
-                reviewer TEXT NOT NULL,
-                decision TEXT NOT NULL,
-                comment TEXT,
-                created_at TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS agent_events (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_id TEXT NOT NULL,
-                agent_name TEXT NOT NULL,
-                status TEXT NOT NULL,
-                summary TEXT NOT NULL,
-                tool_calls TEXT NOT NULL,
-                created_at TEXT NOT NULL
-            );
-            """
-        )
+def get_session():
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
 
+
+def _needs_rebuild(conn: sqlite3.Connection) -> bool:
+    row = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='suppliers'").fetchone()
+    if not row:
+        return False
+    cols = {item[1]: item[2].upper() for item in conn.execute("PRAGMA table_info(suppliers)").fetchall()}
+    return cols.get("id") != "VARCHAR" and cols.get("id") != "TEXT"
+
+
+def _drop_existing_tables(conn: sqlite3.Connection) -> None:
+    for table in [
+        "agent_events",
+        "human_reviews",
+        "reports",
+        "risk_assessments",
+        "evidence_items",
+        "diligence_tasks",
+        "suppliers",
+    ]:
+        conn.execute(f"DROP TABLE IF EXISTS {table}")
+
+
+def init_db() -> None:
+    path = _db_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with sqlite3.connect(path) as conn:
+        if _needs_rebuild(conn):
+            _drop_existing_tables(conn)
+            conn.commit()
+    Base.metadata.create_all(bind=engine)

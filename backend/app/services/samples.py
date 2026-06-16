@@ -1,27 +1,19 @@
 import json
+from typing import Any
+
 from app.config import get_settings
 
 
-def list_sample_suppliers() -> list[dict]:
-    path = get_settings().project_root / "data" / "samples" / "suppliers.json"
-    samples = json.loads(path.read_text(encoding="utf-8"))
-    return [
-        {
-            "sample_key": item["sample_key"],
-            "risk_profile": item["risk_profile"],
-            "name": item["name"],
-            "website": item["website"],
-            "industry": item["industry"],
-            "region": item["region"],
-            "annual_spend": item["annual_spend"],
-            "procurement_amount": item.get("procurement_amount", item["annual_spend"]),
-            "cooperation_type": item["cooperation_type"],
-            "business_status": item.get("business_status"),
-            "company_age_years": item.get("company_age_years"),
-            "profile_completeness": item.get("profile_completeness"),
-            "ownership_transparency": item.get("ownership_transparency"),
-            "urgency": item.get("urgency"),
-            "summary": item["summary"],
-        }
-        for item in samples
-    ]
+def _load_samples() -> list[dict[str, Any]]:
+    return json.loads(get_settings().suppliers_path.read_text(encoding="utf-8"))
+
+
+def list_sample_suppliers() -> list[dict[str, Any]]:
+    return _load_samples()
+
+
+def get_sample_supplier(identifier: str) -> dict[str, Any] | None:
+    for item in _load_samples():
+        if item["id"] == identifier or item["sample_key"] == identifier:
+            return item
+    return None

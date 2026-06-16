@@ -1,22 +1,27 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.agents.orchestrator import Orchestrator
 from app.database import init_db
 from app.repositories import create_task_record, get_report, get_task, list_events, save_review
 from app.schemas import ReportResponse, ReviewCreate, TaskCreate, TaskResponse
-from app.services.samples import list_sample_suppliers
+from app.services.sample_service import get_sample_supplier, list_sample_suppliers
+from app.services.seed_service import seed_suppliers
+from app.tools.mock_search_tool import MockSearchTool
+from app.tools.rag_policy_tool import RAGPolicyTool
+from app.tools.risk_rule_tool import RiskRuleTool
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    seed_suppliers()
     yield
 
 
-app = FastAPI(title="SupplyGuard Agent API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="SupplyGuard Agent API", version="0.2.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,9 +32,14 @@ app.add_middleware(
 )
 
 
+@app.get("/health")
+def root_health() -> dict[str, str]:
+    return {"status": "ok", "service": "supplyguard-agent"}
+
+
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "ok", "service": "supplyguard-agent"}
 
 
 @app.get("/")
@@ -38,7 +48,7 @@ def root() -> dict[str, str]:
         "name": "SupplyGuard Agent API",
         "status": "running",
         "docs": "http://127.0.0.1:8000/docs",
-        "health": "http://127.0.0.1:8000/api/health",
+        "health": "http://127.0.0.1:8000/health",
         "samples": "http://127.0.0.1:8000/api/samples/suppliers",
     }
 
@@ -46,6 +56,28 @@ def root() -> dict[str, str]:
 @app.get("/api/samples/suppliers")
 def samples() -> list[dict]:
     return list_sample_suppliers()
+
+
+@app.get("/api/tools/mock-search/{supplier_id}")
+def mock_search(supplier_id: str) -> list[dict]:
+    evidence = MockSearchTool().search_by_supplier_id(supplier_id)
+    if not evidence:
+        raise HTTPException(status_code=404, detail=f"No mock evidence found for supplier_id={supplier_id}")
+    return evidence
+
+
+@app.get("/api/tools/risk-assessment/{supplier_id}")
+def risk_assessment(supplier_id: str) -> dict:
+    supplier = get_sample_supplier(supplier_id)
+    if not supplier:
+        raise HTTPException(status_code=404, detail=f"Supplier not found: {supplier_id}")
+    evidence = MockSearchTool().search_by_supplier_id(supplier["id"])
+    return RiskRuleTool().assess(evidence, supplier)
+
+
+@app.get("/api/tools/policy-search")
+def policy_search(query: str = Query(..., min_length=1), top_k: int = 3) -> list[dict]:
+    return RAGPolicyTool().retrieve(query, top_k=top_k)
 
 
 @app.post("/api/diligence/tasks", response_model=TaskResponse)

@@ -42,7 +42,7 @@ class RiskRuleTool:
                 return
             raw_score += points
             has_critical = has_critical or points >= 30
-            hit_rules.append({"rule": rule, "dimension": dimension, "points": points, "evidence_source": evidence_source, "rationale": rationale})
+            hit_rules.append({"rule": rule, "dimension": dimension, "points": points, "evidence_source": evidence_source, "rationale": rationale, "evidence_ids": []})
 
         for item in evidence:
             text = f"{item.get('title', '')} {item.get('content', '')}".lower()
@@ -97,7 +97,28 @@ class RiskRuleTool:
             "medium": "建议补充材料后准入，或进入采购负责人/合规负责人人工复核。",
             "high": "建议拒绝准入；如业务必须采购，应升级至合规委员会或管理层审批。",
         }[level]
-        return {"raw_score": raw_score, "total_score": total, "risk_level": level, "recommendation": recommendation, "dimensions": dimensions, "hit_rules": hit_rules}
+        dimension_scores = {item["dimension"]: item["score"] for item in dimensions}
+        triggered_rules = [
+            {
+                "rule_id": item["rule"],
+                "dimension": item["dimension"],
+                "rule_name": item["rule"],
+                "score": item["points"],
+                "reason": item["rationale"],
+                "evidence_ids": item.get("evidence_ids", []),
+            }
+            for item in hit_rules
+        ]
+        return {
+            "raw_score": raw_score,
+            "total_score": total,
+            "risk_level": level,
+            "recommendation": recommendation,
+            "dimensions": dimensions,
+            "dimension_scores": dimension_scores,
+            "hit_rules": hit_rules,
+            "triggered_rules": triggered_rules,
+        }
 
     def _sum(self, hit_rules: list[dict[str, Any]], dimension: str) -> int:
         return min(100, sum(item["points"] for item in hit_rules if item["dimension"] == dimension))
@@ -112,3 +133,4 @@ class RiskRuleTool:
         if score >= 40:
             return "medium"
         return "low"
+
