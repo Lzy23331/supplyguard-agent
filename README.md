@@ -232,3 +232,48 @@ Invoke-RestMethod -Method Post "http://127.0.0.1:8000/api/diligence/tasks/$($tas
 ```
 
 所有第四批核心 API 均使用统一响应结构：成功为 `{ success, data, message }`，失败为 `{ success:false, error:{ code, message } }`。
+
+## 第五批前端工作台
+
+前端工作台用于演示供应商尽调任务的完整闭环：样例任务、自定义任务、风险画像、Agent 时间线、证据链、Markdown 报告和人工复核。
+
+启动后端：
+
+```powershell
+cd "D:\projects\SupplyGuard-Agent"
+.\scripts\start-backend.ps1
+```
+
+启动前端：
+
+```powershell
+cd "D:\projects\SupplyGuard-Agent\frontend"
+npm install
+npm run dev
+```
+
+如果使用项目内便携 Node：
+
+```powershell
+cd "D:\projects\SupplyGuard-Agent"
+.\scripts\start-frontend.ps1
+```
+
+访问：`http://127.0.0.1:5173`
+
+演示流程：
+
+1. 在任务创建页查看低/中/高风险样例供应商卡片。
+2. 点击“创建该样例任务”，推荐使用高风险样例。
+3. 进入任务详情页，确认风险等级为“高风险”，总分为 `100`，原始分为 `250`。
+4. 查看 Agent 执行时间线，确认五个 Agent 和工具调用均展示。
+5. 查看关键证据链，确认制裁接近性、商业贿赂等高风险证据可见。
+6. 查看 Markdown 尽调报告，点击“复制报告”或“下载 Markdown”。
+7. 在人工复核区域选择复核结论并提交，页面提示“人工复核已提交”。
+8. 返回任务创建页，使用自定义供应商表单创建自定义尽调任务。
+
+前端 API 地址可通过 `frontend/.env.example` 配置：
+
+```text
+VITE_API_BASE_URL=http://127.0.0.1:8000
+```

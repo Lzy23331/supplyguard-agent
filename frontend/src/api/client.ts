@@ -1,54 +1,51 @@
-export type SupplierInput = {
-  name: string;
-  website?: string;
-  industry: string;
-  region: string;
-  annual_spend: number;
-  cooperation_type: string;
-  sample_key?: string;
-};
+﻿import type {
+  AgentEvent,
+  ApiResponse,
+  DiligenceTaskSummary,
+  EvidenceItem,
+  ReportResponse,
+  ReviewPayload,
+  Supplier,
+  TaskDetail
+} from "../types/diligence";
 
-export type DiligenceTask = {
-  id: string;
-  status: string;
-  supplier: SupplierInput;
-  risk_level?: string;
-  total_score?: number;
-  recommendation?: string;
-  dimensions: Array<{ dimension: string; score: number; level: string; rationale: string }>;
-  evidence: Array<{ title: string; content: string; source: string; severity: string; url?: string }>;
-  created_at: string;
-  updated_at: string;
-};
-
-export type AgentEvent = {
-  id: number;
-  agent_name: string;
-  status: string;
-  summary: string;
-  tool_calls: Array<Record<string, unknown>>;
-  created_at: string;
-};
-
-const API_BASE = import.meta.env.VITE_API_BASE ?? "";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(options?.headers ?? {}) },
-    ...options
-  });
-  if (!response.ok) {
-    throw new Error(await response.text());
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: { "Content-Type": "application/json", ...(options?.headers ?? {}) },
+      ...options
+    });
+  } catch {
+    throw new Error(`无法连接后端，请确认 FastAPI 已运行在 ${API_BASE_URL}`);
   }
-  return response.json() as Promise<T>;
+
+  const body = (await response.json().catch(() => null)) as ApiResponse<T> | null;
+  if (!response.ok || !body) {
+    throw new Error(body?.error?.message || `请求失败：HTTP ${response.status}`);
+  }
+  if (body.success === false) {
+    throw new Error(body.error?.message || "接口返回失败");
+  }
+  return body.data as T;
 }
 
 export const api = {
-  samples: () => request<SupplierInput[]>("/api/samples/suppliers"),
-  createTask: (supplier: SupplierInput) =>
-    request<DiligenceTask>("/api/diligence/tasks", { method: "POST", body: JSON.stringify({ supplier }) }),
-  getTask: (taskId: string) => request<DiligenceTask>(`/api/diligence/tasks/${taskId}`),
-  getEvents: (taskId: string) => request<AgentEvent[]>(`/api/diligence/tasks/${taskId}/events`),
-  getReport: (taskId: string) => request<{ task_id: string; markdown: string }>(`/api/diligence/tasks/${taskId}/report`)
+  getSampleSuppliers: () => request<Supplier[]>("/api/samples/suppliers"),
+  createTaskFromSample: (supplierId: string) =>
+    request<DiligenceTaskSummary>(`/api/diligence/tasks/from-sample/${supplierId}`, { method: "POST" }),
+  createCustomTask: (supplier: Supplier) =>
+    request<DiligenceTaskSummary>("/api/diligence/tasks", { method: "POST", body: JSON.stringify({ supplier }) }),
+  getTasks: () => request<DiligenceTaskSummary[]>("/api/diligence/tasks"),
+  getTask: (taskId: string) => request<TaskDetail>(`/api/diligence/tasks/${taskId}`),
+  getTaskEvents: (taskId: string) => request<AgentEvent[]>(`/api/diligence/tasks/${taskId}/events`),
+  getTaskEvidence: (taskId: string) => request<EvidenceItem[]>(`/api/diligence/tasks/${taskId}/evidence`),
+  getTaskReport: (taskId: string) => request<ReportResponse>(`/api/diligence/tasks/${taskId}/report`),
+  submitReview: (taskId: string, payload: ReviewPayload) =>
+    request<{ task_id: string; decision: string; created_at: string }>(`/api/diligence/tasks/${taskId}/review`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    })
 };
-
