@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
@@ -12,8 +12,13 @@ from app.tools.mock_search import MockSearchTool
 from app.tools.rag_policy import RAGPolicyTool
 from app.tools.risk_rules import RiskRuleTool
 
-
 client = TestClient(app)
+
+
+def data(response):
+    body = response.json()
+    assert body["success"] is True
+    return body["data"]
 
 
 def test_create_task_and_events_report():
@@ -21,17 +26,17 @@ def test_create_task_and_events_report():
     sample = next(item for item in list_sample_suppliers() if item["sample_key"] == "low")
     response = client.post("/api/diligence/tasks", json={"supplier": sample})
     assert response.status_code == 200
-    task = response.json()
+    task = data(response)
     assert task["status"] == "completed"
     assert task["risk_level"] == "low"
     assert task["total_score"] < 40
 
-    events = client.get(f"/api/diligence/tasks/{task['id']}/events").json()
+    events = data(client.get(f"/api/diligence/tasks/{task['task_id']}/events"))
     assert len(events) >= 10
     assert any(event["agent_name"] == "ReportAgent" for event in events)
     assert any("开始执行" in event["summary"] for event in events)
 
-    report = client.get(f"/api/diligence/tasks/{task['id']}/report").json()["markdown"]
+    report = data(client.get(f"/api/diligence/tasks/{task['task_id']}/report"))["markdown_content"]
     assert "风险等级" in report
     assert "证据链" in report
     assert "准入建议" in report
@@ -42,7 +47,7 @@ def test_sample_suppliers_generate_different_risk_levels():
     for sample in list_sample_suppliers():
         response = client.post("/api/diligence/tasks", json={"supplier": sample})
         assert response.status_code == 200
-        task = response.json()
+        task = data(response)
         assert task["risk_level"] == expected[sample["sample_key"]]
         if sample["sample_key"] == "medium":
             assert 45 <= task["total_score"] <= 55
@@ -81,4 +86,3 @@ def test_risk_rule_tool_hits_high_risk():
     assert risk["raw_score"] >= risk["total_score"]
     assert risk["total_score"] >= 70
     assert all({"rule", "dimension", "points", "evidence_source"}.issubset(item) for item in risk["hit_rules"])
-

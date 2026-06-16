@@ -52,3 +52,4 @@ milvus_data/
 # large temporary files
 tmp/
 temp/
+.task-input/

@@ -1,5 +1,6 @@
-[
+﻿[
   {
+    "id": "supplier_low_001",
     "sample_key": "low",
     "risk_profile": "low",
     "name": "GreenFlow Components Ltd.",
@@ -7,26 +8,23 @@
     "industry": "工业零部件",
     "region": "新加坡",
     "annual_spend": 180000,
+    "procurement_amount": 180000,
     "cooperation_type": "标准零部件供应商",
+    "business_status": "正常",
+    "company_age_years": 8,
+    "profile_completeness": "高",
+    "ownership_transparency": "高",
+    "urgency": "常规",
     "summary": "工商登记完整，财务资料可追溯，样例数据中未发现实质负面记录。",
+    "tags": ["资料完整", "标准采购", "无实质负面"],
+    "expected_risk_level": "low",
     "evidence": [
-      {
-        "source": "public_registry",
-        "title": "工商登记信息完整",
-        "content": "该供应商处于正常存续状态，股权结构稳定，税务与基础主体资料完整。",
-        "severity": "info",
-        "url": "mock://registry/greenflow"
-      },
-      {
-        "source": "media_monitor",
-        "title": "未发现实质负面舆情",
-        "content": "在样例舆情数据集中，未发现制裁、重大诉讼、商业贿赂或严重交付失败信号。",
-        "severity": "info",
-        "url": "mock://media/greenflow"
-      }
+      {"id": "ev_low_registry_001", "source": "public_registry", "category": "主体资质", "title": "工商登记信息完整", "content": "该供应商处于正常存续状态，股权结构稳定，税务与基础主体资料完整。", "severity": "info", "rule_signals": [], "economic_rationale": "主体资料完整可降低合同签署、付款校验和后续追责成本。", "url": "mock://registry/greenflow"},
+      {"id": "ev_low_media_001", "source": "media_monitor", "category": "公开舆情", "title": "未发现实质负面舆情", "content": "在样例舆情数据集中，未发现制裁、重大诉讼、商业贿赂或严重交付失败信号。", "severity": "info", "rule_signals": [], "economic_rationale": "未发现重大负面记录，准入后按标准年度复核即可。", "url": "mock://media/greenflow"}
     ]
   },
   {
+    "id": "supplier_medium_001",
     "sample_key": "medium",
     "risk_profile": "medium",
     "name": "Northbridge Packaging Co.",
@@ -34,26 +32,23 @@
     "industry": "包装材料",
     "region": "越南",
     "annual_spend": 720000,
+    "procurement_amount": 720000,
     "cooperation_type": "战略包装材料供应商",
+    "business_status": "正常",
+    "company_age_years": 5,
+    "profile_completeness": "中",
+    "ownership_transparency": "中",
+    "urgency": "常规",
     "summary": "存在轻微诉讼与延期交付记录，准入前建议补充说明材料。",
+    "tags": ["合同争议", "延期交付", "需补充材料"],
+    "expected_risk_level": "medium",
     "evidence": [
-      {
-        "source": "court_record",
-        "title": "2025 年商业诉讼已和解",
-        "content": "该供应商曾涉及合同争议诉讼，目前无持续执行记录，但采购复核 SOP 要求提供情况说明。",
-        "severity": "warning",
-        "url": "mock://court/northbridge"
-      },
-      {
-        "source": "delivery_review",
-        "title": "两次延期交付记录",
-        "content": "参考客户反馈其在季节性需求高峰期间发生过两次延期交付，需要评估产能与备货计划。",
-        "severity": "warning",
-        "url": "mock://delivery/northbridge"
-      }
+      {"id": "ev_medium_court_001", "source": "court_record", "category": "司法诉讼", "title": "2025 年商业诉讼已和解", "content": "该供应商曾涉及合同争议诉讼，目前无持续执行记录，但采购复核 SOP 要求提供情况说明。", "severity": "warning", "rule_signals": ["minor_contract_dispute"], "economic_rationale": "合同争议可能增加履约谈判成本，需要补充争议说明和整改材料。", "url": "mock://court/northbridge"},
+      {"id": "ev_medium_delivery_001", "source": "delivery_review", "category": "交付履约", "title": "两次延期交付记录", "content": "参考客户反馈其在季节性需求高峰期间发生过两次延期交付，需要评估产能与备货计划。", "severity": "warning", "rule_signals": ["multiple_late_delivery", "supplementary_performance_materials_missing"], "economic_rationale": "重复延期会增加缺货、替代采购和生产排期波动成本。", "url": "mock://delivery/northbridge"}
     ]
   },
   {
+    "id": "supplier_high_001",
     "sample_key": "high",
     "risk_profile": "high",
     "name": "Redstone Metals Trading",
@@ -61,24 +56,19 @@
     "industry": "金属贸易",
     "region": "中国香港",
     "annual_spend": 2600000,
+    "procurement_amount": 2600000,
     "cooperation_type": "关键原材料供应商",
+    "business_status": "信息不透明",
+    "company_age_years": 1,
+    "profile_completeness": "低",
+    "ownership_transparency": "低",
+    "urgency": "紧急",
     "summary": "存在制裁接近性与商业贿赂相关指控，构成严重合规风险。",
+    "tags": ["制裁接近", "商业贿赂", "受益所有人不透明", "高金额采购"],
+    "expected_risk_level": "high",
     "evidence": [
-      {
-        "source": "sanction_screening",
-        "title": "制裁接近性预警",
-        "content": "样例筛查数据中显示，该供应商的一名受益所有人出现在行业制裁观察名单中。",
-        "severity": "critical",
-        "url": "mock://sanctions/redstone"
-      },
-      {
-        "source": "integrity_media",
-        "title": "商业贿赂调查相关指控",
-        "content": "公开报道显示，该供应商前销售负责人曾被卷入与清关环节有关的商业贿赂调查。",
-        "severity": "critical",
-        "url": "mock://media/redstone"
-      }
+      {"id": "ev_high_sanction_001", "source": "sanction_screening", "category": "制裁筛查", "title": "制裁接近性预警", "content": "样例筛查数据中显示，该供应商的一名受益所有人出现在行业制裁观察名单中。", "severity": "critical", "rule_signals": ["sanction_or_blacklist", "overseas_opaque", "beneficial_owner_missing"], "economic_rationale": "制裁或观察名单相关方可能导致付款受阻、合同无法履行和重大合规处罚。", "url": "mock://sanctions/redstone"},
+      {"id": "ev_high_bribery_001", "source": "integrity_media", "category": "商业诚信", "title": "商业贿赂调查相关指控", "content": "公开报道显示，该供应商前销售负责人曾被卷入与清关环节有关的商业贿赂调查。", "severity": "critical", "rule_signals": ["bribery_or_fraud", "negative_media_single", "serious_administrative_penalty"], "economic_rationale": "商业贿赂调查会提高监管问询、合同无效和声誉损失风险。", "url": "mock://media/redstone"}
     ]
   }
 ]
-

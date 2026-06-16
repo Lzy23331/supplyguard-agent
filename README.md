@@ -161,3 +161,74 @@ Invoke-RestMethod "http://127.0.0.1:8000/api/diligence/tasks/$($task.id)/report"
 3. 第五批：完善 React 前端工作台。
 4. 第六批：完善文档、演示脚本、面试讲解和最终测试。
 
+
+## 第四批 API 使用示例
+
+后端启动：
+
+```powershell
+cd "D:\projects\SupplyGuard-Agent"
+.\scripts\start-backend.ps1
+```
+
+打开 Swagger：`http://127.0.0.1:8000/docs`
+
+健康检查：
+
+```powershell
+Invoke-RestMethod "http://127.0.0.1:8000/health"
+```
+
+获取样例供应商：
+
+```powershell
+Invoke-RestMethod "http://127.0.0.1:8000/api/samples/suppliers"
+```
+
+从高风险样例创建任务：
+
+```powershell
+$task = Invoke-RestMethod -Method Post "http://127.0.0.1:8000/api/diligence/tasks/from-sample/supplier_high_001"
+$task.data.task_id
+```
+
+创建自定义供应商任务：
+
+```powershell
+$body = @{
+  supplier = @{
+    name = "Demo Supplier Ltd."
+    website = "https://example.com/demo"
+    industry = "电子元器件"
+    region = "广东深圳"
+    procurement_amount = 800000
+    annual_spend = 800000
+    cooperation_type = "标准采购"
+    business_status = "正常"
+    company_age_years = 5
+    profile_completeness = "中"
+    ownership_transparency = "中"
+    urgency = "常规"
+  }
+} | ConvertTo-Json -Depth 5
+Invoke-RestMethod -Method Post "http://127.0.0.1:8000/api/diligence/tasks" -ContentType "application/json" -Body $body
+```
+
+查询任务列表、详情、事件、证据和报告：
+
+```powershell
+Invoke-RestMethod "http://127.0.0.1:8000/api/diligence/tasks"
+Invoke-RestMethod "http://127.0.0.1:8000/api/diligence/tasks/$($task.data.task_id)"
+Invoke-RestMethod "http://127.0.0.1:8000/api/diligence/tasks/$($task.data.task_id)/events"
+Invoke-RestMethod "http://127.0.0.1:8000/api/diligence/tasks/$($task.data.task_id)/evidence"
+Invoke-RestMethod "http://127.0.0.1:8000/api/diligence/tasks/$($task.data.task_id)/report"
+```
+
+提交人工复核：
+
+```powershell
+$review = @{ reviewer="demo_reviewer"; decision="approve_with_conditions"; comment="要求供应商补充合规证明和近三年交付记录后再准入。" } | ConvertTo-Json
+Invoke-RestMethod -Method Post "http://127.0.0.1:8000/api/diligence/tasks/$($task.data.task_id)/review" -ContentType "application/json" -Body $review
+```
+
+所有第四批核心 API 均使用统一响应结构：成功为 `{ success, data, message }`，失败为 `{ success:false, error:{ code, message } }`。

@@ -306,3 +306,90 @@ def save_review(task_id: str, reviewer: str, decision: str, comment: str | None)
             """,
             (task_id, reviewer, decision, comment, now_iso()),
         )
+
+
+def get_risk_assessment(task_id: str) -> dict[str, Any] | None:
+    with get_db() as conn:
+        row = conn.execute(
+            """
+            SELECT raw_score, total_score, risk_level, dimension_scores, triggered_rules, recommendation, rationale
+            FROM risk_assessments
+            WHERE task_id=? AND raw_score IS NOT NULL
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (task_id,),
+        ).fetchone()
+    if not row:
+        return None
+    data = dict(row)
+    data["dimension_scores"] = _decode_json(data.get("dimension_scores"), {})
+    data["triggered_rules"] = _decode_json(data.get("triggered_rules"), [])
+    return data
+
+
+def list_tasks(limit: int = 20) -> list[dict[str, Any]]:
+    with get_db() as conn:
+        rows = conn.execute(
+            """
+            SELECT t.id AS task_id, t.supplier_id, s.name AS supplier_name, t.status, t.risk_level,
+                   t.total_score, t.recommendation, t.created_at, t.updated_at
+            FROM diligence_tasks t
+            JOIN suppliers s ON s.id = t.supplier_id
+            ORDER BY t.created_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_task_detail(task_id: str) -> dict[str, Any] | None:
+    task = get_task(task_id)
+    if not task:
+        return None
+    risk = get_risk_assessment(task_id) or {
+        "raw_score": None,
+        "total_score": task.get("total_score"),
+        "risk_level": task.get("risk_level"),
+        "dimension_scores": {},
+        "triggered_rules": [],
+        "recommendation": task.get("recommendation"),
+    }
+    return {
+        "task": {
+            "id": task["id"],
+            "status": task["status"],
+            "summary": task.get("recommendation") or task.get("summary"),
+            "created_at": task["created_at"],
+            "updated_at": task["updated_at"],
+        },
+        "supplier": task["supplier"],
+        "risk_assessment": risk,
+        "dimension_scores": risk.get("dimension_scores", {}),
+        "evidence_count": len(task.get("evidence", [])),
+        "event_count": len(list_events(task_id)),
+    }
+
+
+def save_review(task_id: str, reviewer: str, decision: str, comment: str | None) -> dict[str, Any]:
+    created = now_iso()
+    with get_db() as conn:
+        conn.execute(
+            """
+            INSERT INTO human_reviews (task_id, reviewer, decision, comment, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (task_id, reviewer, decision, comment, created),
+        )
+        conn.execute(
+            "UPDATE diligence_tasks SET status=?, updated_at=? WHERE id=?",
+            ("reviewed", created, task_id),
+        )
+    return {"task_id": task_id, "reviewer": reviewer, "decision": decision, "comment": comment, "created_at": created}
+
+
+def list_reviews(task_id: str) -> list[dict[str, Any]]:
+    with get_db() as conn:
+        rows = conn.execute("SELECT * FROM human_reviews WHERE task_id=? ORDER BY id", (task_id,)).fetchall()
+    return [dict(row) for row in rows]

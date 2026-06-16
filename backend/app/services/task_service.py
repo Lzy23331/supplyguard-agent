@@ -1,4 +1,4 @@
-from typing import Any
+﻿from typing import Any
 
 from app.agents.orchestrator import Orchestrator
 from app.database import init_db
@@ -20,7 +20,7 @@ class TaskService:
             industry=supplier.get("industry"),
             region=supplier.get("region"),
             annual_spend=supplier.get("annual_spend", 0),
-            procurement_amount=supplier.get("procurement_amount"),
+            procurement_amount=supplier.get("procurement_amount") or supplier.get("annual_spend", 0),
             cooperation_type=supplier.get("cooperation_type"),
             sample_key=supplier.get("sample_key"),
             business_status=supplier.get("business_status"),
@@ -28,6 +28,9 @@ class TaskService:
             profile_completeness=supplier.get("profile_completeness"),
             ownership_transparency=supplier.get("ownership_transparency"),
             urgency=supplier.get("urgency"),
+            summary=supplier.get("summary"),
+            tags=supplier.get("tags", []),
+            expected_risk_level=supplier.get("expected_risk_level"),
         )
         task_id = create_task_record(payload)
         Orchestrator().run(task_id, supplier)
@@ -40,6 +43,12 @@ class TaskService:
         init_db()
         task_id = create_task_record(supplier)
         data = supplier.model_dump()
+        if data.get("procurement_amount") is None:
+            data["procurement_amount"] = data.get("annual_spend") or 0
+        if data.get("annual_spend") is None:
+            data["annual_spend"] = data.get("procurement_amount") or 0
+        if data.get("tags") is None:
+            data["tags"] = []
         if data.get("sample_key"):
             data["id"] = f"supplier_{data['sample_key']}_001"
         Orchestrator().run(task_id, data)
