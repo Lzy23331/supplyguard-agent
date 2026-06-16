@@ -10,3 +10,45 @@ backend/.env
 node_modules/
 dist/
 .env
+# environment variables
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+
+# data/cache/index files
+*.db
+*.sqlite
+*.sqlite3
+.cache/
+storage/
+faiss_index/
+faiss_index_store/
+chroma/
+milvus_data/
+
+# large temporary files
+tmp/
+temp/
