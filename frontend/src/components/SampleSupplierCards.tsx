@@ -2,7 +2,7 @@
 import type { Supplier } from "../types/diligence";
 import { money, riskText } from "./format";
 
-export function SampleSupplierCards({ samples, loading, onCreate }: { samples: Supplier[]; loading: boolean; onCreate: (id: string) => void }) {
+export function SampleSupplierCards({ samples, loading, hasMaterial, onCreate }: { samples: Supplier[]; loading: boolean; hasMaterial?: boolean; onCreate: (id: string) => void }) {
   if (!samples.length) return <div className="empty-state">暂无样例供应商，请确认后端已启动。</div>;
   return (
     <div className="sample-grid">
@@ -22,7 +22,7 @@ export function SampleSupplierCards({ samples, loading, onCreate }: { samples: S
           <p className="summary-text">{supplier.summary}</p>
           <div className="tag-row">{supplier.tags?.map((tag) => <span key={tag}>{tag}</span>)}</div>
           <button className="primary-button" disabled={loading || !supplier.id} onClick={() => supplier.id && onCreate(supplier.id)}>
-            <Sparkles size={16} />创建该样例任务
+            <Sparkles size={16} />{hasMaterial ? "创建该样例任务并分析补充材料" : "创建该样例任务"}
           </button>
         </article>
       ))}

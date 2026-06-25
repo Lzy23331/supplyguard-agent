@@ -1,9 +1,14 @@
-from app.agents.base import AgentContext
+﻿from app.agents.base import AgentContext
 from app.agents.business_risk import BusinessRiskAgent
 from app.agents.compliance_risk import ComplianceRiskAgent
+from app.agents.company_resolver_agent import CompanyResolverAgent
+from app.agents.company_profile_extraction_agent import CompanyProfileExtractionAgent
 from app.agents.evidence_collector import EvidenceCollectorAgent
+from app.agents.external_evidence_agent import ExternalEvidenceAgent
 from app.agents.intake import IntakeAgent
+from app.agents.material_analysis_agent import MaterialAnalysisAgent
 from app.agents.report import ReportAgent
+from app.agents.search_query_planner_agent import SearchQueryPlannerAgent
 from app.repositories import add_event, update_task
 
 
@@ -11,9 +16,22 @@ class Orchestrator:
     name = "Orchestrator"
 
     def __init__(self) -> None:
-        self.agents = [
+        self.default_agents = [
             IntakeAgent(),
             EvidenceCollectorAgent(),
+            MaterialAnalysisAgent(),
+            ComplianceRiskAgent(),
+            BusinessRiskAgent(),
+            ReportAgent(),
+        ]
+        self.company_query_agents = [
+            CompanyResolverAgent(),
+            SearchQueryPlannerAgent(),
+            IntakeAgent(),
+            EvidenceCollectorAgent(),
+            ExternalEvidenceAgent(),
+            CompanyProfileExtractionAgent(),
+            MaterialAnalysisAgent(),
             ComplianceRiskAgent(),
             BusinessRiskAgent(),
             ReportAgent(),
@@ -24,7 +42,8 @@ class Orchestrator:
         add_event(task_id, self.name, "agent_started", "running", "编排器开始执行同步尽调流程。")
         update_task(task_id, status="running")
         try:
-            for agent in self.agents:
+            agents = self.company_query_agents if supplier.get("query_type") == "company_name" or supplier.get("company_name") else self.default_agents
+            for agent in agents:
                 context = agent.run(context)
             risk = context["risk"]
             update_task(
@@ -41,3 +60,5 @@ class Orchestrator:
             update_task(task_id, status="failed", summary=str(exc))
             add_event(task_id, self.name, "agent_failed", "failed", f"编排器执行失败：{exc}")
             raise
+
+

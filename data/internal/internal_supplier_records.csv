@@ -1,0 +1,4 @@
+company_name,title,content,severity,risk_keywords,confidence
+Aster Precision Components Co., Ltd.,内部供应记录良好,内部模拟记录显示该供应商过往交付稳定且未发生重大争议,info,,0.82
+Nova Packaging Materials Ltd.,内部记录提示补充绩效材料,内部模拟记录显示该供应商需补交最近年度绩效材料,warning,补充材料,0.7
+Northbridge Electronics Trading LLC.,内部记录提示预付款争议,内部模拟记录显示该供应商要求较高预付款比例且存在付款争议记录,critical,预付款;付款纠纷,0.88

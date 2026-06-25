@@ -1,14 +1,27 @@
-﻿import { CheckCircle2, CircleDot, Wrench, XCircle } from "lucide-react";
+import { CheckCircle2, CircleDot, RefreshCw, Sparkles, Wrench, XCircle } from "lucide-react";
 import type { AgentEvent } from "../types/diligence";
 import { eventText, time } from "./format";
 
-const iconMap: Record<string, typeof CircleDot> = { agent_started: CircleDot, tool_called: Wrench, agent_completed: CheckCircle2, agent_failed: XCircle };
+const iconMap: Record<string, typeof CircleDot> = {
+  agent_started: CircleDot,
+  tool_called: Wrench,
+  llm_call: Sparkles,
+  llm_fallback: RefreshCw,
+  query_rewrite: Sparkles,
+  agent_skipped: CheckCircle2,
+  agent_completed: CheckCircle2,
+  agent_failed: XCircle,
+};
 
 export function AgentTimeline({ events }: { events: AgentEvent[] }) {
-  if (!events.length) return <div className="empty-state">暂无 Agent 执行事件。</div>;
+  if (!events.length) return <div className="empty-state">等待 Agent 事件写入。</div>;
+  const ordered = [...events].sort((a, b) => {
+    const timeDiff = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    return timeDiff || a.id - b.id;
+  });
   return (
     <div className="timeline-list">
-      {events.map((event) => {
+      {ordered.map((event) => {
         const Icon = iconMap[event.event_type ?? ""] ?? CircleDot;
         return (
           <article className={`timeline-event ${event.event_type ?? ""}`} key={event.id}>

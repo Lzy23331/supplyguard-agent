@@ -1,0 +1,11 @@
+[
+  {
+    "company_name": "Northbridge Electronics Trading LLC.",
+    "title": "疑似制裁名单关联与黑名单风险提示",
+    "content": "模拟制裁筛查源提示该供应商存在疑似制裁名单关联和黑名单风险提示，需要人工升级复核。",
+    "severity": "critical",
+    "risk_keywords": ["疑似制裁名单关联", "黑名单", "观察名单"],
+    "confidence": 0.93,
+    "source_name": "模拟制裁筛查"
+  }
+]

@@ -1,0 +1,16 @@
+﻿services:
+  supplyguard-agent:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DEPLOYMENT_MODE: demo
+      ENABLE_REAL_QUERY: "false"
+      ENABLE_LLM_REPORT_POLISH: "true"
+      MODEL_MODE: mock
+      PROVIDER_MODE: mock
+      WEB_SEARCH_PROVIDER: mock
+      LLM_FALLBACK_TO_MOCK: "true"
+      DATABASE_URL: sqlite:////app/backend/supplyguard.db
+    command: >
+      sh -c "python scripts/seed_demo_cases.py && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --app-dir backend"

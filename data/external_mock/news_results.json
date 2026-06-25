@@ -1,0 +1,20 @@
+[
+  {
+    "company_name": "Nova Packaging Materials Ltd.",
+    "title": "客户投诉涉及交付延期",
+    "content": "模拟新闻源显示 Nova Packaging Materials Ltd. 曾因旺季产能波动出现单次交付延期和客户投诉。",
+    "severity": "warning",
+    "risk_keywords": ["交付延期", "投诉"],
+    "confidence": 0.68,
+    "source_name": "模拟新闻检索"
+  },
+  {
+    "company_name": "Northbridge Electronics Trading LLC.",
+    "title": "公开材料提示付款纠纷与交付争议",
+    "content": "模拟新闻源显示 Northbridge Electronics Trading LLC. 涉及多起付款纠纷和交付争议。",
+    "severity": "critical",
+    "risk_keywords": ["付款纠纷", "交付争议", "负面新闻"],
+    "confidence": 0.86,
+    "source_name": "模拟新闻检索"
+  }
+]

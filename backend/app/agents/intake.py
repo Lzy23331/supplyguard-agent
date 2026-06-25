@@ -1,4 +1,5 @@
 from app.agents.base import AgentContext, BaseAgent
+from app.services.llm_task_service import generate_intake_plan
 
 
 class IntakeAgent(BaseAgent):
@@ -20,12 +21,25 @@ class IntakeAgent(BaseAgent):
                 checks.append("补充材料核验")
                 key_concerns.append("资料完整性不足，可能提高准入不确定性。")
 
+            llm_plan = generate_intake_plan(None, context["task_id"], supplier, agent_name=self.name)
+            focus_text = "、".join(llm_plan.get("focus_areas", [])[:4])
+            self.event(
+                context["task_id"],
+                "llm_call",
+                "completed",
+                f"已生成结构化尽调计划：重点关注 {focus_text}。",
+                tool_name="LLMTaskService.generate_intake_plan",
+                tool_input={"supplier_id": supplier.get("id"), "sample_key": supplier.get("sample_key")},
+                tool_output_summary=str(llm_plan)[:1000],
+            )
             plan = {
                 "checks": checks,
                 "priority": "high" if len(checks) >= 6 else "standard",
                 "tools_to_use": ["MockSearchTool", "RAGPolicyTool", "RiskRuleTool", "ReportExportTool"],
                 "key_concerns": key_concerns or ["当前资料完整，按标准准入流程复核。"],
                 "reason": "根据采购金额、地区、资料完整性和合作类型确定尽调范围。",
+                "llm_generated_plan": llm_plan,
+                **llm_plan,
             }
             context["plan"] = plan
             context["diligence_plan"] = plan

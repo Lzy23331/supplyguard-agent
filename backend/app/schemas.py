@@ -1,7 +1,10 @@
-﻿from typing import Any, Literal
+from typing import Any, Literal
+
 from pydantic import BaseModel, Field
 
 ReviewDecision = Literal["approve", "approve_with_conditions", "reject", "escalate"]
+ExecutionMode = Literal["sync", "async"]
+TaskStatus = Literal["pending", "running", "completed", "failed", "reviewed"]
 
 
 class SupplierCreate(BaseModel):
@@ -24,7 +27,14 @@ class SupplierCreate(BaseModel):
 
 
 class TaskCreate(BaseModel):
-    supplier: SupplierCreate
+    supplier: SupplierCreate | None = None
+    supplier_id: str | None = None
+    company_name: str | None = Field(default=None, min_length=1, max_length=300)
+    procurement_amount: float | None = Field(default=None, ge=0)
+    cooperation_type: str | None = None
+    execution_mode: ExecutionMode = "sync"
+    material_text: str | None = Field(default=None, max_length=20000)
+    upload_ids: list[str] = []
 
 
 class ReviewCreate(BaseModel):
@@ -49,11 +59,12 @@ class AgentEvent(BaseModel):
 
 class TaskResponse(BaseModel):
     id: str
-    status: str
+    status: TaskStatus | str
     supplier: dict[str, Any]
     risk_level: str | None = None
     total_score: int | None = None
     recommendation: str | None = None
+    error_message: str | None = None
     dimensions: list[dict[str, Any]] = []
     evidence: list[dict[str, Any]] = []
     created_at: str

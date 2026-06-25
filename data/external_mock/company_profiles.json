@@ -1,0 +1,75 @@
+[
+  {
+    "name": "Aster Precision Components Co., Ltd.",
+    "aliases": ["Aster Precision", "Aster Components"],
+    "website": "https://www.aster-precision.example",
+    "industry": "精密零部件",
+    "region": "中国",
+    "annual_spend": 320000,
+    "business_status": "正常",
+    "company_age_years": 9,
+    "profile_completeness": "高",
+    "ownership_transparency": "高",
+    "summary": "主体登记、受益所有人和履约记录较完整，未发现关键负面公开信号。",
+    "tags": ["资料完整", "稳定供货", "常规采购"],
+    "expected_risk_level": "low",
+    "evidence": [
+      {
+        "title": "企业登记资料完整",
+        "content": "公开模拟档案显示该企业登记信息、联系方式和受益所有人说明完整。",
+        "severity": "info",
+        "risk_keywords": [],
+        "confidence": 0.84
+      }
+    ]
+  },
+  {
+    "name": "Nova Packaging Materials Ltd.",
+    "aliases": ["Nova Packaging"],
+    "website": "https://www.nova-packaging.example",
+    "industry": "包装材料",
+    "region": "中国",
+    "annual_spend": 850000,
+    "business_status": "正常",
+    "company_age_years": 4,
+    "profile_completeness": "中",
+    "ownership_transparency": "中",
+    "summary": "基础资料可核验，但部分绩效材料和受益所有人说明仍需补充。",
+    "tags": ["资料待补充", "交付需跟踪"],
+    "expected_risk_level": "medium",
+    "evidence": [
+      {
+        "title": "绩效材料待补充",
+        "content": "模拟企业档案显示最近年度供货绩效材料尚未完整提交。",
+        "severity": "warning",
+        "risk_keywords": ["补充材料"],
+        "confidence": 0.72
+      }
+    ]
+  },
+  {
+    "name": "Northbridge Electronics Trading LLC.",
+    "aliases": ["Northbridge Electronics", "Northbridge Trading"],
+    "website": "",
+    "industry": "电子元器件贸易",
+    "region": "境外",
+    "annual_spend": 5000000,
+    "business_status": "信息不透明",
+    "company_age_years": 1,
+    "profile_completeness": "低",
+    "ownership_transparency": "低",
+    "urgency": "紧急",
+    "summary": "境外电子元器件贸易商，主体披露不完整，需重点关注制裁、黑名单和付款争议信号。",
+    "tags": ["境外主体", "信息不透明", "高额紧急采购"],
+    "expected_risk_level": "high",
+    "evidence": [
+      {
+        "title": "主体注册信息披露不完整",
+        "content": "模拟企业档案显示该供应商未能提供完整注册信息和最终受益所有人说明。",
+        "severity": "critical",
+        "risk_keywords": ["注册信息披露不完整", "最终受益所有人", "境外主体"],
+        "confidence": 0.9
+      }
+    ]
+  }
+]
