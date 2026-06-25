@@ -1,4 +1,4 @@
-﻿FROM node:22-slim AS frontend-build
+FROM node:22-slim AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci
@@ -15,4 +15,4 @@ COPY data /app/data
 COPY scripts /app/scripts
 COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 EXPOSE 8000
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--app-dir", "backend"]
+CMD ["sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --app-dir backend"]

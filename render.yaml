@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: supplyguard-agent
+    env: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: DEPLOYMENT_MODE
+        value: demo
+      - key: ENABLE_REAL_QUERY
+        value: "true"
+      - key: ENABLE_LLM_REPORT_POLISH
+        value: "true"
+      - key: MODEL_MODE
+        value: real
+      - key: PROVIDER_MODE
+        value: real
+      - key: WEB_SEARCH_PROVIDER
+        value: real
+      - key: WEB_SEARCH_API
+        value: tencent
+      - key: TENCENT_WSA_PROVIDER
+        value: real
+      - key: TENCENT_WSA_ENDPOINT
+        value: https://wsa.tencentcloudapi.com
+      - key: TENCENT_WSA_ACTION
+        value: SearchPro
+      - key: TENCENT_WSA_VERSION
+        value: 2025-05-08
+      - key: TENCENTCLOUD_REGION
+        value: ap-guangzhou
+      - key: OPENAI_BASE_URL
+        value: https://api.deepseek.com/v1
+      - key: OPENAI_MODEL
+        value: deepseek-chat
+      - key: LLM_FALLBACK_TO_MOCK
+        value: "true"
+      - key: TENCENTCLOUD_SECRET_ID
+        sync: false
+      - key: TENCENTCLOUD_SECRET_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
