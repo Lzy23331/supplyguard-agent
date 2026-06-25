@@ -7,7 +7,15 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    model_config = ConfigDict(env_file=".env", populate_by_name=True, arbitrary_types_allowed=True, extra="ignore")
+    model_config = ConfigDict(
+        env_file=(
+            str(Path(__file__).resolve().parents[2] / "backend" / ".env"),
+            str(Path(__file__).resolve().parents[2] / ".env"),
+        ),
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        extra="ignore",
+    )
 
     app_name: str = "SupplyGuard Agent"
     deployment_mode: str = Field(default="demo", alias="DEPLOYMENT_MODE")
