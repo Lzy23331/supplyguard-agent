@@ -1,19 +1,23 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { CompanyNameSearchPanel, type CompanyNameSearchValue } from "../components/CompanyNameSearchPanel";
 import { FileUploadPanel } from "../components/FileUploadPanel";
 import { MaterialInputBox } from "../components/MaterialInputBox";
 import { SampleSupplierCards } from "../components/SampleSupplierCards";
 import { defaultSupplier, SupplierForm } from "../components/SupplierForm";
-import type { Supplier, UploadMaterial } from "../types/diligence";
+import type { ProviderStatus, Supplier, UploadMaterial } from "../types/diligence";
+
+type CreateMode = "demo" | "real";
 
 export function TaskCreatePage({ onTaskCreated, onOpenTasks }: { onTaskCreated: (taskId: string) => void; onOpenTasks?: () => void }) {
   const [samples, setSamples] = useState<Supplier[]>([]);
+  const [status, setStatus] = useState<ProviderStatus | null>(null);
+  const [createMode, setCreateMode] = useState<CreateMode>("real");
   const [supplier, setSupplier] = useState<Supplier>(defaultSupplier);
   const [companyQuery, setCompanyQuery] = useState<CompanyNameSearchValue>({
-    company_name: "Northbridge Electronics Trading LLC.",
-    procurement_amount: 5000000,
-    cooperation_type: "紧急采购",
+    company_name: "大疆创新科技有限公司",
+    procurement_amount: 500000,
+    cooperation_type: "常规采购",
   });
   const [materialText, setMaterialText] = useState("");
   const [uploads, setUploads] = useState<UploadMaterial[]>([]);
@@ -22,6 +26,7 @@ export function TaskCreatePage({ onTaskCreated, onOpenTasks }: { onTaskCreated: 
 
   useEffect(() => {
     api.getSampleSuppliers().then(setSamples).catch((err) => setError(err instanceof Error ? err.message : String(err)));
+    api.getProviderStatus().then(setStatus).catch(() => undefined);
   }, []);
 
   async function createFromSample(id: string) {
@@ -87,8 +92,31 @@ export function TaskCreatePage({ onTaskCreated, onOpenTasks }: { onTaskCreated: 
         <FileUploadPanel uploads={uploads} onUploadsChange={setUploads} />
       </section>
       <section className="section-block">
-        <div className="section-title"><h2>企业名称查询尽调</h2><p>输入企业名称创建任务，系统会先解析企业画像，再调用模拟外部数据源和内部记录抽取证据。</p></div>
-        <CompanyNameSearchPanel value={companyQuery} loading={loading} hasMaterial={Boolean(materialText.trim()) || uploads.some((item) => item.status === "parsed")} onChange={setCompanyQuery} onSubmit={createFromCompanyName} />
+        <div className="section-title"><h2>企业名称查询尽调</h2><p>演示时可在缓存 Demo 和真实联网查询之间切换；真实模式会使用当前后端 Provider 配置。</p></div>
+        <div className="mode-switch">
+          <button className={createMode === "demo" ? "active" : ""} onClick={() => setCreateMode("demo")}>Demo Mode</button>
+          <button className={createMode === "real" ? "active" : ""} onClick={() => setCreateMode("real")}>Real Query Mode</button>
+        </div>
+        {createMode === "real" ? (
+          <>
+            <div className={`provider-inline-status ${status?.real_query_enabled ? "ready" : "warning"}`}>
+              <strong>当前模式：Real Query Mode</strong>
+              <span>{status?.real_query_enabled ? "真实联网查询已可用，会调用 TencentWebSearchProvider。" : "真实查询未完全就绪，请检查 Tencent/LLM 环境变量；任务仍会记录 fallback 原因。"}</span>
+            </div>
+            <CompanyNameSearchPanel
+              value={companyQuery}
+              loading={loading}
+              hasMaterial={Boolean(materialText.trim()) || uploads.some((item) => item.status === "parsed")}
+              onChange={setCompanyQuery}
+              onSubmit={createFromCompanyName}
+            />
+          </>
+        ) : (
+          <div className="demo-mode-inline">
+            <strong>当前模式：Demo Mode</strong>
+            <p>缓存案例不消耗真实 API，适合稳定演示。下面的样例供应商会创建可复现的演示任务。</p>
+          </div>
+        )}
       </section>
       <section className="section-block">
         <div className="section-title"><h2>自定义供应商尽调</h2><p>录入供应商基础资料，可选补充材料，系统会异步执行同一套 Agent 工作流。</p></div>
@@ -101,5 +129,3 @@ export function TaskCreatePage({ onTaskCreated, onOpenTasks }: { onTaskCreated: 
     </main>
   );
 }
-
-

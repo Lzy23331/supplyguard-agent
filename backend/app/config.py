@@ -1,4 +1,4 @@
-﻿from functools import lru_cache
+from functools import lru_cache
 import os
 from pathlib import Path
 
@@ -90,6 +90,15 @@ class Settings(BaseSettings):
         if self.tencent_wsa_provider and not os.getenv("WEB_SEARCH_PROVIDER"):
             self.web_search_provider = self.tencent_wsa_provider.strip().lower()
         if self.tencent_wsa_provider == "real" and not os.getenv("WEB_SEARCH_API"):
+            self.web_search_api = "tencent"
+        if (
+            self.web_search_provider == "mock"
+            and self.tencentcloud_secret_id
+            and self.tencentcloud_secret_key
+            and (self.tencent_wsa_endpoint or self.tencent_wsa_action or self.tencent_wsa_version)
+            and not os.getenv("WEB_SEARCH_PROVIDER")
+        ):
+            self.web_search_provider = "real"
             self.web_search_api = "tencent"
         if self.tencent_wsa_endpoint and not os.getenv("TENCENT_WEB_SEARCH_ENDPOINT"):
             self.tencent_web_search_endpoint = self.tencent_wsa_endpoint

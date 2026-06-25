@@ -10,24 +10,32 @@ export function CompanyNameSearchPanel({
   value,
   loading,
   hasMaterial,
+  modeLabel = "Real Query Mode",
+  modeDescription = "将调用后端配置的联网搜索 Provider，并把搜索结果、企业画像和报告写入当前任务。",
   onChange,
   onSubmit,
 }: {
   value: CompanyNameSearchValue;
   loading: boolean;
   hasMaterial: boolean;
+  modeLabel?: string;
+  modeDescription?: string;
   onChange: (value: CompanyNameSearchValue) => void;
   onSubmit: () => void;
 }) {
   return (
     <div className="company-search-panel">
+      <div className="query-mode-banner">
+        <strong>{modeLabel}</strong>
+        <span>{modeDescription}</span>
+      </div>
       <div className="form-grid compact">
         <label>
           企业名称
           <input
             value={value.company_name}
             onChange={(event) => onChange({ ...value, company_name: event.target.value })}
-            placeholder="Northbridge Electronics Trading LLC."
+            placeholder="例如：大疆创新科技有限公司"
           />
         </label>
         <label>
@@ -37,7 +45,7 @@ export function CompanyNameSearchPanel({
             min={0}
             value={value.procurement_amount ?? ""}
             onChange={(event) => onChange({ ...value, procurement_amount: Number(event.target.value || 0) })}
-            placeholder="5000000"
+            placeholder="500000"
           />
         </label>
         <label>
@@ -53,7 +61,7 @@ export function CompanyNameSearchPanel({
       </div>
       <button className="primary-button wide" disabled={loading || !value.company_name.trim()} onClick={onSubmit}>
         <Search size={16} />
-        {hasMaterial ? "按企业名称创建任务并分析补充材料" : "按企业名称创建任务"}
+        {hasMaterial ? "创建真实查询任务并分析补充材料" : "创建真实查询任务"}
       </button>
     </div>
   );

@@ -1,4 +1,4 @@
-﻿from app.agents.base import AgentContext, BaseAgent
+from app.agents.base import AgentContext, BaseAgent
 from app.evidence_providers.base import EvidenceCandidate
 from app.evidence_providers.provider_manager import EvidenceProviderManager
 from app.repositories import list_web_search_results
@@ -40,6 +40,7 @@ class ExternalEvidenceAgent(BaseAgent):
                 severity="info",
                 metadata={"should_use_for_scoring": False, "fallback_summary": True},
             ).model_dump()
+            fallback_item["should_use_for_scoring"] = False
             evidence.append(fallback_item)
             self.event(
                 context["task_id"],
@@ -59,5 +60,6 @@ class ExternalEvidenceAgent(BaseAgent):
             {"task_id": context["task_id"], "evidence_count": len(evidence)},
             f"已写入 {len(evidence)} 条外部/内部证据。",
         )
-        self.completed(context, f"外部证据抽象层收集完成，共获得 {len(evidence)} 条可评分证据。")
+        scoring_count = sum(1 for item in evidence if item.get("should_use_for_scoring", (item.get("metadata") or {}).get("should_use_for_scoring", True)))
+        self.completed(context, f"外部证据抽象层收集完成，共获得 {len(evidence)} 条证据记录，其中 {scoring_count} 条参与评分。")
         return context

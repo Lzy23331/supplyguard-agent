@@ -1,4 +1,4 @@
-﻿from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Query, Request, UploadFile
@@ -87,10 +87,11 @@ def _provider_status() -> dict[str, Any]:
     settings = get_settings()
     tencent_configured = bool(settings.tencentcloud_secret_id and settings.tencentcloud_secret_key)
     llm_configured = bool(settings.openai_api_key)
+    real_provider_requested = settings.web_search_provider == "real" or settings.provider_mode == "real"
     return {
         "deployment_mode": settings.deployment_mode,
-        "real_query_enabled": bool(settings.enable_real_query and tencent_configured and llm_configured),
-        "real_query_requested": settings.enable_real_query,
+        "real_query_enabled": bool((settings.enable_real_query or real_provider_requested) and tencent_configured),
+        "real_query_requested": bool(settings.enable_real_query or real_provider_requested),
         "tencent_search_configured": tencent_configured,
         "llm_configured": llm_configured,
         "pdf_export_available": True,

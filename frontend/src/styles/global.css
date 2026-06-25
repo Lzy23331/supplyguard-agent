@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   font-family: Inter, "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
   color: #1f2937;
   background: #f3f6fa;
@@ -488,4 +488,59 @@ meter { width: 100%; }
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+.mode-switch {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+  width: fit-content;
+}
+
+.mode-switch button {
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 700;
+  min-height: 34px;
+  padding: 0 14px;
+}
+
+.mode-switch button.active {
+  background: #ffffff;
+  color: var(--blue-dark);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+.query-mode-banner,
+.provider-inline-status,
+.demo-mode-inline {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfe;
+  padding: 14px 16px;
+  display: grid;
+  gap: 5px;
+}
+
+.provider-inline-status.ready {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.provider-inline-status.warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.query-mode-banner span,
+.provider-inline-status span,
+.demo-mode-inline p {
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.6;
 }
