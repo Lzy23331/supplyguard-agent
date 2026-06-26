@@ -544,3 +544,68 @@ meter { width: 100%; }
   margin: 0;
   line-height: 1.6;
 }
+.landing-hero {
+  min-height: 520px;
+}
+
+.hero-content {
+  justify-items: center;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.hero-content h1,
+.hero-content > p:not(.eyebrow) {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-actions {
+  justify-content: center;
+}
+
+.subtle-grid {
+  padding-top: 28px;
+  padding-bottom: 24px;
+}
+
+.subtle-grid article {
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: none;
+}
+
+.subtle-grid article h2 {
+  font-size: 16px;
+}
+
+.subtle-grid article p {
+  font-size: 14px;
+}
+
+.subtle-disclaimer {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.subtle-disclaimer h2 {
+  font-size: 16px;
+}
+
+.real-query-note {
+  display: grid;
+  gap: 10px;
+}
+
+.real-query-action {
+  width: fit-content;
+}
+
+@media (max-width: 980px) {
+  .landing-nav {
+    align-items: center;
+  }
+
+  .landing-nav div,
+  .hero-actions {
+    justify-content: center;
+  }
+}

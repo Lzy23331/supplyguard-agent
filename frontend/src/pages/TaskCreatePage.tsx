@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { CompanyNameSearchPanel, type CompanyNameSearchValue } from "../components/CompanyNameSearchPanel";
@@ -9,7 +10,7 @@ import type { ProviderStatus, Supplier, UploadMaterial } from "../types/diligenc
 
 type CreateMode = "demo" | "real";
 
-export function TaskCreatePage({ onTaskCreated, onOpenTasks }: { onTaskCreated: (taskId: string) => void; onOpenTasks?: () => void }) {
+export function TaskCreatePage({ onBackHome, onTaskCreated, onOpenTasks }: { onBackHome: () => void; onTaskCreated: (taskId: string) => void; onOpenTasks?: () => void }) {
   const [samples, setSamples] = useState<Supplier[]>([]);
   const [status, setStatus] = useState<ProviderStatus | null>(null);
   const [createMode, setCreateMode] = useState<CreateMode>("real");
@@ -83,7 +84,7 @@ export function TaskCreatePage({ onTaskCreated, onOpenTasks }: { onTaskCreated: 
           <h1>供应商准入尽调与风险研判系统</h1>
           <p>创建任务后进入详情页，后台 Agent 会持续写入执行进度。</p>
         </div>
-        {onOpenTasks ? <button className="secondary-button" onClick={onOpenTasks}>查看历史任务</button> : null}
+        <div className="action-row compact-actions"><button className="ghost-button" onClick={onBackHome}><ArrowLeft size={16} />返回首页</button>{onOpenTasks ? <button className="secondary-button" onClick={onOpenTasks}>查看历史任务</button> : null}</div>
       </header>
       {error ? <div className="error-banner">{error}</div> : null}
       <section className="section-block">

@@ -21,9 +21,9 @@ def create_llm_client() -> LLMClientBundle:
     requested = (settings.model_mode or "mock").lower()
     if requested == "mock":
         return LLMClientBundle(MockLLMClient(), "mock", requested, "mock-llm")
-    if requested == "llm" and settings.openai_api_key:
+    if requested in {"llm", "real"} and settings.openai_api_key:
         return LLMClientBundle(OpenAICompatibleClient(), "llm", requested, settings.openai_model)
-    if requested == "llm" and settings.llm_fallback_to_mock:
+    if requested in {"llm", "real"} and settings.llm_fallback_to_mock:
         return LLMClientBundle(
             MockLLMClient(),
             "mock",
@@ -32,4 +32,4 @@ def create_llm_client() -> LLMClientBundle:
             fallback_used=True,
             fallback_reason="OPENAI_API_KEY is empty; fallback to mock client",
         )
-    raise LLMConfigurationError("MODEL_MODE=llm requires OPENAI_API_KEY when LLM_FALLBACK_TO_MOCK=false")
+    raise LLMConfigurationError("MODEL_MODE=llm/real requires OPENAI_API_KEY or DEEPSEEK_API_KEY when LLM_FALLBACK_TO_MOCK=false")

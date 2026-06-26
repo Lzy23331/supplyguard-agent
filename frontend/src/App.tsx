@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { DemoGalleryPage } from "./pages/DemoGalleryPage";
 import { LandingPage } from "./pages/LandingPage";
 import { ProviderStatusPage } from "./pages/ProviderStatusPage";
@@ -45,21 +45,21 @@ function App() {
   }, []);
 
   if (route.page === "landing") {
-    return <LandingPage onStartDemo={() => navigate("/demo")} onOpenTasks={() => navigate("/tasks")} onOpenStatus={() => navigate("/settings/status")} />;
+    return <LandingPage onCreateTask={() => navigate("/app")} onStartDemo={() => navigate("/demo")} onOpenTasks={() => navigate("/tasks")} onOpenStatus={() => navigate("/settings/status")} />;
   }
   if (route.page === "demo") {
-    return <DemoGalleryPage onBack={() => navigate("/")} onOpenTask={(taskId) => navigate(`/tasks/${encodeURIComponent(taskId)}`)} />;
+    return <DemoGalleryPage onBack={() => navigate("/")} onCreateTask={() => navigate("/app")} onOpenTask={(taskId) => navigate(`/tasks/${encodeURIComponent(taskId)}`)} />;
   }
   if (route.page === "status") {
     return <ProviderStatusPage onBack={() => navigate("/")} />;
   }
   if (route.page === "tasks") {
-    return <TaskListPage onOpenTask={(taskId) => navigate(`/tasks/${encodeURIComponent(taskId)}`)} onCreateNew={() => navigate("/app")} />;
+    return <TaskListPage onBackHome={() => navigate("/")} onOpenTask={(taskId) => navigate(`/tasks/${encodeURIComponent(taskId)}`)} onCreateNew={() => navigate("/app")} />;
   }
   if (route.page === "detail") {
     return <TaskDetailPage taskId={route.taskId} onBack={() => navigate("/tasks")} />;
   }
-  return <TaskCreatePage onTaskCreated={(taskId) => navigate(`/tasks/${encodeURIComponent(taskId)}`)} onOpenTasks={() => navigate("/tasks")} />;
+  return <TaskCreatePage onBackHome={() => navigate("/")} onTaskCreated={(taskId) => navigate(`/tasks/${encodeURIComponent(taskId)}`)} onOpenTasks={() => navigate("/tasks")} />;
 }
 
 export default App;

@@ -1,6 +1,7 @@
-﻿from app.agents.base import AgentContext, BaseAgent
+from app.agents.base import AgentContext, BaseAgent
 from app.repositories import list_company_profile_snapshots, list_events, list_evidence, list_web_search_results, save_company_profile_snapshots, save_report
 from app.services.company_profile_extractor import CompanyProfileExtractor
+from app.services.llm_report_polish_service import LLMReportPolishService
 from app.tools.report_export import ReportExportTool
 
 
@@ -10,6 +11,7 @@ class ReportAgent(BaseAgent):
     def __init__(self) -> None:
         self.report_tool = ReportExportTool()
         self.profile_extractor = CompanyProfileExtractor()
+        self.polish_service = LLMReportPolishService()
 
     def _search_queries_from_events(self, task_id: str) -> list[dict[str, str]]:
         queries: list[dict[str, str]] = []
@@ -74,6 +76,25 @@ class ReportAgent(BaseAgent):
                 company_profile=company_profile,
                 search_queries=search_queries,
                 task_id=context["task_id"],
+            )
+            markdown, polish_meta = self.polish_service.polish(
+                task_id=context["task_id"],
+                markdown=markdown,
+                context={
+                    "supplier_name": context["supplier"].get("name"),
+                    "risk_level": context["risk"].get("risk_level"),
+                    "total_score": context["risk"].get("total_score"),
+                    "web_search_results": len(web_search_results),
+                },
+            )
+            self.event(
+                context["task_id"],
+                "report_polish",
+                "completed" if polish_meta.get("used") else "warning",
+                "LLM 已完成报告语言润色。" if polish_meta.get("used") else f"报告语言润色未启用或已回退：{polish_meta.get('reason', 'not_used')}",
+                tool_name=self.polish_service.name,
+                tool_input={"enabled": polish_meta.get("enabled"), "model": polish_meta.get("model_name")},
+                tool_output_summary=str(polish_meta),
             )
             self.tool_called(
                 context,

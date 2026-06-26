@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "case_id": "byd_cached_demo",
     "company_name": "比亚迪股份有限公司",
@@ -29,7 +29,7 @@
   {
     "case_id": "huawei_cached_demo",
     "company_name": "华为技术有限公司",
-    "description": "高关注企业中低风险/人工复核示例，展示公开信息覆盖、政策依据和人工复核提示。",
+    "description": "高关注企业中低风险/人工复核案例，展示公开信息覆盖、政策依据和人工复核提示。",
     "industry": "通信设备 / 信息与通信技术",
     "region": "深圳市",
     "website": "https://www.huawei.com",
@@ -56,7 +56,7 @@
   {
     "case_id": "xiaomi_cached_demo",
     "company_name": "小米通讯技术有限公司",
-    "description": "标准准入/补充材料示例，展示消费电子企业公开信息尽调。",
+    "description": "标准准入/补充材料案例，展示消费电子企业公开信息尽调。",
     "industry": "通信设备 / 消费电子",
     "region": "北京市",
     "website": "https://www.mi.com",
@@ -82,8 +82,8 @@
   },
   {
     "case_id": "simulated_high_risk_demo",
-    "company_name": "模拟高风险供应商（教学示例）",
-    "description": "模拟案例，用于演示失信、行政处罚、交付争议如何影响评分；不代表真实企业。",
+    "company_name": "高风险供应商案例",
+    "description": "高风险供应商案例，展示失信、行政处罚、交付争议等风险信号对准入判断的影响。",
     "industry": "电子元器件贸易",
     "region": "境外",
     "website": null,
@@ -100,7 +100,7 @@
       {"query":"模拟高风险供应商 付款纠纷","title":"模拟付款纠纷报道","url":"https://example.com/simulated-payment-dispute","snippet":"模拟记录显示多起付款纠纷。","rank":1,"domain":"example.com","domain_trust_score":0.55,"entity_match_score":0.86,"risk_relevance_score":0.65,"decision":"score_evidence","decision_reason":"模拟交付与付款风险","matched_risk_keywords":["lawsuit_dispute"]},
       {"query":"模拟高风险供应商 交付争议","title":"模拟交付争议记录","url":"https://example.com/simulated-delivery","snippet":"模拟记录显示多起交付延期争议。","rank":1,"domain":"example.com","domain_trust_score":0.55,"entity_match_score":0.86,"risk_relevance_score":0.65,"decision":"score_evidence","decision_reason":"模拟交付风险","matched_risk_keywords":["negative_public_opinion"]}
     ],
-    "company_profile": {"company_full_name":"模拟高风险供应商（教学示例）","website":null,"industry":"电子元器件贸易","region":"境外","registered_capital":"未披露","established_date":"未披露","legal_representative":"未披露","registered_address":"未披露","business_status":"信息不透明"},
+    "company_profile": {"company_full_name":"高风险供应商案例","website":null,"industry":"电子元器件贸易","region":"境外","registered_capital":"未披露","established_date":"未披露","legal_representative":"未披露","registered_address":"未披露","business_status":"信息不透明"},
     "dimension_scores": {"compliance":86,"business":35,"delivery":25,"completeness":20,"reputation":20},
     "matched_rules": ["sanction_or_blacklist", "major_dishonesty", "serious_administrative_penalty", "multiple_contract_disputes"]
   }

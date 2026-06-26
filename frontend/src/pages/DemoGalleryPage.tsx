@@ -1,10 +1,10 @@
-﻿import { ArrowLeft, PlayCircle, RefreshCw } from "lucide-react";
+import { ArrowLeft, ArrowRight, PlayCircle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { riskText } from "../components/format";
 import type { DemoCaseSummary, ProviderStatus } from "../types/diligence";
 
-export function DemoGalleryPage({ onBack, onOpenTask }: { onBack: () => void; onOpenTask: (taskId: string) => void }) {
+export function DemoGalleryPage({ onBack, onCreateTask, onOpenTask }: { onBack: () => void; onCreateTask: () => void; onOpenTask: (taskId: string) => void }) {
   const [cases, setCases] = useState<DemoCaseSummary[]>([]);
   const [status, setStatus] = useState<ProviderStatus | null>(null);
   const [runningCase, setRunningCase] = useState<string | null>(null);
@@ -42,7 +42,7 @@ export function DemoGalleryPage({ onBack, onOpenTask }: { onBack: () => void; on
         <div>
           <p className="eyebrow">Cached Demo Mode</p>
           <h1>演示案例库</h1>
-          <p>点击示例会创建缓存演示任务，不调用实时腾讯云或 LLM API。</p>
+          <p>点击示例会创建缓存演示任务，快速查看完整尽调报告和证据链。</p>
         </div>
         <div className="action-row compact-actions">
           <button className="ghost-button" onClick={onBack}><ArrowLeft size={16} />返回首页</button>
@@ -77,7 +77,8 @@ export function DemoGalleryPage({ onBack, onOpenTask }: { onBack: () => void; on
       </section>
       <section className="panel real-query-note">
         <h2>Real Query Mode</h2>
-        <p>{status?.real_query_enabled ? "后端已开启实时查询，可在创建页输入真实企业名称；该模式会消耗 API 次数。" : "当前实时查询入口关闭。设置 ENABLE_REAL_QUERY=true 且后端密钥配置完整后，可用于本地管理员演示。"}</p>
+        <p>{status?.real_query_enabled ? "后端已开启实时查询，可在创建页输入真实企业名称；该模式会消耗 API 次数。" : "当前实时查询入口关闭。设置 ENABLE_REAL_QUERY=true 且后端密钥配置完整后可启用。"}</p>
+        <button className="secondary-button real-query-action" onClick={onCreateTask}>进入创建新任务 <ArrowRight size={16} /></button>
       </section>
     </main>
   );

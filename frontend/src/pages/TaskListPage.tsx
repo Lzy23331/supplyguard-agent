@@ -1,4 +1,4 @@
-﻿import { Download, ExternalLink, RefreshCw, Search } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, RefreshCw, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { money, riskText, time } from "../components/format";
@@ -18,7 +18,7 @@ function downloadMarkdown(taskId: string, markdown: string, filename?: string) {
   URL.revokeObjectURL(url);
 }
 
-export function TaskListPage({ onOpenTask, onCreateNew }: { onOpenTask: (taskId: string) => void; onCreateNew: () => void }) {
+export function TaskListPage({ onBackHome, onOpenTask, onCreateNew }: { onBackHome: () => void; onOpenTask: (taskId: string) => void; onCreateNew: () => void }) {
   const [tasks, setTasks] = useState<DiligenceTaskSummary[]>([]);
   const [taskIdInput, setTaskIdInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -64,6 +64,7 @@ export function TaskListPage({ onOpenTask, onCreateNew }: { onOpenTask: (taskId:
           <p>按 task_id 打开详情、核对联网搜索数据，并导出当前任务报告。</p>
         </div>
         <div className="action-row compact-actions">
+          <button className="ghost-button" onClick={onBackHome}><ArrowLeft size={16} />返回首页</button>
           <button className="secondary-button" onClick={() => void load()} disabled={loading}><RefreshCw size={16} />刷新</button>
           <button className="primary-button" onClick={onCreateNew}>新建任务</button>
         </div>
