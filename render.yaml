@@ -2,7 +2,7 @@ services:
   - type: web
     name: supplyguard-agent
     runtime: docker
-    plan: starter
+    plan: free
     region: singapore
     rootDir: .
     autoDeploy: true
