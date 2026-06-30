@@ -79,13 +79,6 @@ def task_summary(task: dict[str, Any]) -> dict[str, Any]:
 
 
 
-def _mask_secret(value: str | None) -> str | None:
-    if not value:
-        return None
-    tail = value[-4:] if len(value) >= 4 else value
-    return f"****{tail}"
-
-
 def _provider_status() -> dict[str, Any]:
     settings = get_settings()
     tencent_configured = bool(settings.tencentcloud_secret_id and settings.tencentcloud_secret_key)
@@ -109,8 +102,6 @@ def _provider_status() -> dict[str, Any]:
         "real_query_daily_used": daily_used,
         "real_query_daily_remaining": max(0, daily_limit - daily_used) if daily_limit else None,
         "real_query_cache_days": settings.real_query_cache_days,
-        "tencent_secret_id_mask": _mask_secret(settings.tencentcloud_secret_id),
-        "api_key_mask": _mask_secret(settings.openai_api_key),
     }
 def upload_summary(record: dict[str, Any]) -> dict[str, Any]:
     return {

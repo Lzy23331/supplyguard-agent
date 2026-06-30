@@ -28,7 +28,7 @@ export function ProviderStatusPage({ onBack }: { onBack: () => void }) {
         <div>
           <p className="eyebrow">System Status</p>
           <h1>Provider 与部署状态</h1>
-          <p>仅展示配置状态和 masked key，不展示完整密钥。</p>
+          <p>仅展示服务配置状态，不展示任何密钥或密钥尾号。</p>
         </div>
         <div className="action-row compact-actions">
           <button className="ghost-button" onClick={onBack}><ArrowLeft size={16} />返回首页</button>
@@ -45,14 +45,14 @@ export function ProviderStatusPage({ onBack }: { onBack: () => void }) {
             <StatusItem label="腾讯云搜索已配置" value={status.tencent_search_configured} />
             <StatusItem label="LLM 已配置" value={status.llm_configured} />
             <StatusItem label="PDF 导出" value={status.pdf_export_available} />
-            <StatusItem label="腾讯云 SecretId" value={status.tencent_secret_id_mask} />
-            <StatusItem label="LLM API Key" value={status.api_key_mask} />
+            <StatusItem label="腾讯云 Secret" value={status.tencent_search_configured ? "已配置" : "未配置"} />
+            <StatusItem label="LLM Secret" value={status.llm_configured ? "已配置" : "未配置"} />
           </div>
         )}
       </section>
       <section className="panel">
         <h2>安全边界</h2>
-        <p className="summary-text">密钥只应存在于后端 .env 或部署平台 Secret 中。前端页面、报告、PDF 和 Git 仓库不得包含完整 API Key。</p>
+        <p className="summary-text">密钥只应存在于后端 .env 或部署平台 Secret 中。前端页面、报告、PDF、公开 API 和 Git 仓库不得包含 API Key 或密钥尾号。</p>
       </section>
     </main>
   );

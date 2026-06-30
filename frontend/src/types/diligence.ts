@@ -244,6 +244,4 @@ export type ProviderStatus = {
   web_search_provider?: string;
   web_search_api?: string;
   llm_model?: string | null;
-  tencent_secret_id_mask?: string | null;
-  api_key_mask?: string | null;
 };
