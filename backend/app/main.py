@@ -20,6 +20,9 @@ from app.repositories import (
     list_tasks,
     task_diagnostics,
     save_review,
+    count_real_queries_today,
+    find_recent_completed_company_task,
+    record_real_query_usage,
 )
 from app.schemas import ReviewCreate, TaskCreate
 from app.services.sample_service import get_sample_supplier, list_sample_suppliers
@@ -88,21 +91,27 @@ def _provider_status() -> dict[str, Any]:
     tencent_configured = bool(settings.tencentcloud_secret_id and settings.tencentcloud_secret_key)
     llm_configured = bool(settings.openai_api_key)
     real_provider_requested = settings.web_search_provider == "real" or settings.provider_mode == "real"
+    daily_used = count_real_queries_today()
+    daily_limit = max(0, int(settings.real_query_daily_limit or 0))
     return {
         "deployment_mode": settings.deployment_mode,
         "real_query_enabled": bool((settings.enable_real_query or real_provider_requested) and tencent_configured),
         "real_query_requested": bool(settings.enable_real_query or real_provider_requested),
         "tencent_search_configured": tencent_configured,
+        "tencent_provider_configured": tencent_configured,
         "llm_configured": llm_configured,
         "pdf_export_available": True,
-        "demo_mode_available": True,
+        "demo_mode_available": settings.demo_mode_enabled,
         "web_search_provider": settings.web_search_provider,
         "web_search_api": settings.web_search_api,
         "llm_model": settings.openai_model if llm_configured else None,
+        "real_query_daily_limit": daily_limit,
+        "real_query_daily_used": daily_used,
+        "real_query_daily_remaining": max(0, daily_limit - daily_used) if daily_limit else None,
+        "real_query_cache_days": settings.real_query_cache_days,
         "tencent_secret_id_mask": _mask_secret(settings.tencentcloud_secret_id),
         "api_key_mask": _mask_secret(settings.openai_api_key),
     }
-
 def upload_summary(record: dict[str, Any]) -> dict[str, Any]:
     return {
         "upload_id": record["id"],
@@ -214,12 +223,12 @@ def frontend_task_detail(task_id: str):
 
 @app.get("/health", summary="健康检查")
 def root_health() -> dict[str, Any]:
-    return ok({"status": "ok", "service": "supplyguard-agent"})
+    return ok({"status": "ok", "service": "supplyguard-agent", **_provider_status()})
 
 
 @app.get("/api/health", summary="API 健康检查")
 def health() -> dict[str, Any]:
-    return ok({"status": "ok", "service": "supplyguard-agent"})
+    return ok({"status": "ok", "service": "supplyguard-agent", **_provider_status()})
 
 
 
@@ -300,10 +309,19 @@ def read_tasks(limit: int = Query(default=20, ge=1, le=100)) -> dict[str, Any]:
 
 
 @app.post("/api/diligence/tasks", summary="创建供应商尽调任务")
-def create_task(payload: TaskCreate, background_tasks: BackgroundTasks) -> dict[str, Any]:
+def create_task(payload: TaskCreate, background_tasks: BackgroundTasks, request: Request) -> dict[str, Any]:
     try:
         service = TaskService()
         if payload.company_name:
+            status = _provider_status()
+            cached = find_recent_completed_company_task(payload.company_name, cache_days=get_settings().real_query_cache_days)
+            if cached:
+                return ok(task_summary(cached), "reused recent completed real-query task")
+            if not status["real_query_enabled"]:
+                api_error(403, "REAL_QUERY_DISABLED", "真实查询模式未启用或腾讯云 Provider 未配置，请使用缓存演示案例。")
+            daily_limit = status.get("real_query_daily_limit") or 0
+            if daily_limit and (status.get("real_query_daily_used") or 0) >= daily_limit:
+                api_error(429, "REAL_QUERY_DAILY_LIMIT_EXCEEDED", f"真实查询今日全站额度已用完（{daily_limit} 次），请使用缓存演示案例或明日再试。")
             if payload.execution_mode == "async":
                 task = service.create_pending_task_from_company_query(
                     payload.company_name,
@@ -312,6 +330,7 @@ def create_task(payload: TaskCreate, background_tasks: BackgroundTasks) -> dict[
                     material_text=payload.material_text,
                     upload_ids=payload.upload_ids,
                 )
+                record_real_query_usage(task["id"], payload.company_name)
                 background_tasks.add_task(run_diligence_task_background, task["id"])
                 return ok(task_summary(task), "task accepted")
             task = service.create_task_from_company_query(
@@ -321,6 +340,7 @@ def create_task(payload: TaskCreate, background_tasks: BackgroundTasks) -> dict[
                 material_text=payload.material_text,
                 upload_ids=payload.upload_ids,
             )
+            record_real_query_usage(task["id"], payload.company_name)
             return ok(task_summary(task), "task completed")
         if payload.supplier_id:
             if payload.execution_mode == "async":

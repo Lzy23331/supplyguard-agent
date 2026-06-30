@@ -107,6 +107,8 @@ export function TaskCreatePage({ onBackHome, onTaskCreated, onOpenTasks }: { onB
             <CompanyNameSearchPanel
               value={companyQuery}
               loading={loading}
+              disabled={!status?.real_query_enabled}
+              disabledReason="真实查询未启用或 Provider 未配置，请先使用 Demo Mode。"
               hasMaterial={Boolean(materialText.trim()) || uploads.some((item) => item.status === "parsed")}
               onChange={setCompanyQuery}
               onSubmit={createFromCompanyName}

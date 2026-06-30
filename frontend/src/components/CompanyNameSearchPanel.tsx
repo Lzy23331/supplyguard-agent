@@ -9,6 +9,8 @@ export type CompanyNameSearchValue = {
 export function CompanyNameSearchPanel({
   value,
   loading,
+  disabled = false,
+  disabledReason,
   hasMaterial,
   modeLabel = "Real Query Mode",
   modeDescription = "将调用后端配置的联网搜索 Provider，并把搜索结果、企业画像和报告写入当前任务。",
@@ -17,17 +19,21 @@ export function CompanyNameSearchPanel({
 }: {
   value: CompanyNameSearchValue;
   loading: boolean;
+  disabled?: boolean;
+  disabledReason?: string;
   hasMaterial: boolean;
   modeLabel?: string;
   modeDescription?: string;
   onChange: (value: CompanyNameSearchValue) => void;
   onSubmit: () => void;
 }) {
+  const submitDisabled = disabled || loading || !value.company_name.trim();
   return (
     <div className="company-search-panel">
       <div className="query-mode-banner">
         <strong>{modeLabel}</strong>
         <span>{modeDescription}</span>
+        {disabled && disabledReason ? <span className="field-hint">{disabledReason}</span> : null}
       </div>
       <div className="form-grid compact">
         <label>
@@ -59,7 +65,7 @@ export function CompanyNameSearchPanel({
           </select>
         </label>
       </div>
-      <button className="primary-button wide" disabled={loading || !value.company_name.trim()} onClick={onSubmit}>
+      <button className="primary-button wide" disabled={submitDisabled} onClick={onSubmit}>
         <Search size={16} />
         {hasMaterial ? "创建真实查询任务并分析补充材料" : "创建真实查询任务"}
       </button>

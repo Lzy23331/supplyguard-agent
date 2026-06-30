@@ -1,4 +1,4 @@
-﻿import json
+import json
 import uuid
 from datetime import datetime, timezone
 from typing import Any
@@ -655,3 +655,58 @@ def list_reviews(task_id: str) -> list[dict[str, Any]]:
 
 
 
+
+def normalize_company_name_for_cache(company_name: str | None) -> str:
+    return "".join((company_name or "").lower().split())
+
+
+def count_real_queries_today() -> int:
+    today = datetime.now(timezone.utc).date().isoformat()
+    with get_db() as conn:
+        row = conn.execute("SELECT COUNT(*) AS count FROM real_query_usage WHERE usage_date=?", (today,)).fetchone()
+    return int(row["count"] if row else 0)
+
+
+def record_real_query_usage(task_id: str, company_name: str) -> None:
+    now = now_iso()
+    today = datetime.now(timezone.utc).date().isoformat()
+    with get_db() as conn:
+        conn.execute(
+            "INSERT INTO real_query_usage (usage_date, task_id, company_name, created_at) VALUES (?, ?, ?, ?)",
+            (today, task_id, normalize_company_name_for_cache(company_name), now),
+        )
+
+
+def find_recent_completed_company_task(company_name: str, cache_days: int = 7) -> dict[str, Any] | None:
+    normalized = normalize_company_name_for_cache(company_name)
+    if not normalized:
+        return None
+    cutoff = datetime.now(timezone.utc).timestamp() - max(1, cache_days) * 86400
+    with get_db() as conn:
+        rows = conn.execute(
+            """
+            SELECT t.id, t.created_at
+            FROM diligence_tasks t
+            JOIN suppliers s ON s.id = t.supplier_id
+            WHERE t.status='completed' AND t.query_type='company_name'
+            ORDER BY t.created_at DESC
+            LIMIT 80
+            """,
+        ).fetchall()
+    for row in rows:
+        task = get_task(row["id"])
+        if not task:
+            continue
+        created_at = task.get("created_at") or ""
+        try:
+            created_ts = datetime.fromisoformat(created_at.replace("Z", "+00:00")).timestamp()
+        except ValueError:
+            created_ts = datetime.now(timezone.utc).timestamp()
+        if created_ts < cutoff:
+            continue
+        candidate_name = task.get("company_name") or task.get("supplier", {}).get("name")
+        if normalize_company_name_for_cache(candidate_name) != normalized:
+            continue
+        if task_diagnostics(task["id"]).get("web_search_result_count", 0) > 0:
+            return task
+    return None

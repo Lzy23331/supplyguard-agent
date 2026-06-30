@@ -3,6 +3,8 @@ services:
     name: supplyguard-agent
     env: docker
     plan: starter
+    region: singapore
+    rootDir: .
     autoDeploy: true
     healthCheckPath: /api/health
     envVars:
@@ -10,6 +12,12 @@ services:
         value: demo
       - key: ENABLE_REAL_QUERY
         value: "true"
+      - key: DEMO_MODE_ENABLED
+        value: "true"
+      - key: CACHE_DEMO_TASKS
+        value: "true"
+      - key: REAL_QUERY_DAILY_LIMIT
+        value: "20"
       - key: ENABLE_LLM_REPORT_POLISH
         value: "true"
       - key: MODEL_MODE
@@ -36,6 +44,12 @@ services:
         value: deepseek-chat
       - key: LLM_FALLBACK_TO_MOCK
         value: "true"
+      - key: PROVIDER_FALLBACK_TO_MOCK
+        value: "true"
+      - key: REPORT_LLM_MAX_INPUT_CHARS
+        value: "6000"
+      - key: REPORT_LLM_TIMEOUT_SECONDS
+        value: "30"
       - key: TENCENTCLOUD_SECRET_ID
         sync: false
       - key: TENCENTCLOUD_SECRET_KEY

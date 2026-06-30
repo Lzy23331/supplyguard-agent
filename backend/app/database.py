@@ -1,4 +1,4 @@
-﻿import sqlite3
+import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -69,6 +69,7 @@ def _drop_existing_tables(conn: sqlite3.Connection) -> None:
         "evidence_items",
         "diligence_tasks",
         "suppliers",
+        "real_query_usage",
     ]:
         conn.execute(f"DROP TABLE IF EXISTS {table}")
 
@@ -160,6 +161,17 @@ def init_db() -> None:
     Base.metadata.create_all(bind=engine)
     with sqlite3.connect(path) as conn:
         _ensure_columns(conn)
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS real_query_usage (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usage_date TEXT NOT NULL,
+                task_id TEXT,
+                company_name TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
         conn.commit()
 
 
