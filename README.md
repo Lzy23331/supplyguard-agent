@@ -1,5 +1,7 @@
 # SupplyGuard Agent
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Lzy23331/supplyguard-agent)
+
 ![Python](https://img.shields.io/badge/Python-3.12-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-API-009688) ![React](https://img.shields.io/badge/React-UI-61dafb) ![Docker](https://img.shields.io/badge/Docker-ready-2496ed)
 
 SupplyGuard Agent 是一个面向供应商准入场景的 AI 尽调与风险研判系统。项目将企业名称输入、LLM 搜索计划、腾讯云联网搜索、证据可信度评估、企业画像抽取、规则评分、Markdown/PDF 报告导出串成一个可部署的完整闭环。

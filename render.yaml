@@ -1,7 +1,7 @@
 services:
   - type: web
     name: supplyguard-agent
-    env: docker
+    runtime: docker
     plan: starter
     region: singapore
     rootDir: .

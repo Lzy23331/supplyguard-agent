@@ -1,5 +1,9 @@
 # Deployment Guide
 
+One-click Render Blueprint:
+
+https://render.com/deploy?repo=https://github.com/Lzy23331/supplyguard-agent
+
 推荐部署方式：Render Web Service + Docker。后端 FastAPI 同时服务 API 与前端 `frontend/dist`，部署后访问根路径即可进入网站。
 
 ## 本地一体化验收
